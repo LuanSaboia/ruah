@@ -1,4 +1,8 @@
-# Logs
+# --- Dependências (Ignorar em todo o projeto) ---
+node_modules/
+**/node_modules/
+
+# --- Logs e Debug ---
 logs
 *.log
 npm-debug.log*
@@ -7,18 +11,31 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# --- Builds e Distribuição ---
 dist
 dist-ssr
-*.local
+build/
+coverage/
 
-# Editor directories and files
+# --- Arquivos de Ambiente (SEGURANÇA: Jamais enviar) ---
+.env
+.env.local
+.env.*.local
+*.env
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Arquivos de Sistema e Editores ---
+.DS_Store
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# --- Outros arquivos locais ---
+*.local

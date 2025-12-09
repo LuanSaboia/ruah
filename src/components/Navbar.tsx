@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { SearchCommand } from "./SearchCommand"
-import { Menu, User, Sun, Moon, Home, List, LogIn, Mic2, Music } from "lucide-react"
+import { Menu, Sun, Moon, Home, List, LogIn, Mic2, Music } from "lucide-react"
 import { useTheme } from "@/lib/useTheme"
 import { Button } from "@/components/ui/button"
 import {

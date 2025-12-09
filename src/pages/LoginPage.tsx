@@ -19,7 +19,7 @@ export function LoginPage() {
     setError(null)
 
     // Login com Supabase
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
