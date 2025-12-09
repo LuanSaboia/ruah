@@ -1,73 +1,45 @@
-# React + TypeScript + Vite
+# Ruah - Digital Songbook
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Project Status](https://img.shields.io/badge/status-active-success)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-Currently, two official plugins are available:
+**Ruah** é uma aplicação moderna de repertório musical (Songbook) desenvolvida para facilitar o acesso a letras e cifras em comunidades, grupos de oração e liturgias (focado no repertório *Cantai* da Comunidade Shalom).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Construído com foco em **Performance**, **UX Mobile-First** e **Design Minimalista**.
 
-## React Compiler
+## ✨ Funcionalidades
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **🔍 Busca Inteligente (Spotlight):** Pesquise músicas ou artistas instantaneamente (Atalho `Ctrl + K`).
+- **📱 Mobile First:** Interface totalmente adaptada para celulares, com menus deslizantes e listas otimizadas.
+- **🌙 Dark Mode:** Alternância nativa entre temas Claro e Escuro.
+- **📂 Organização Poderosa:**
+  - Navegação por **Artistas** (A-Z).
+  - Filtros por **Categorias/Temas** (Louvor, Adoração, Litúrgico, etc.).
+  - Suporte a múltiplas categorias por música.
+- **🔒 Área Administrativa Protegida:**
+  - Login seguro via Supabase Auth.
+  - Painel para Cadastrar, Editar e Excluir músicas.
+  - Editor de letras simples e direto.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+O projeto utiliza as tecnologias mais modernas do ecossistema React:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Frontend:** [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
+- **Componentes:** [shadcn/ui](https://ui.shadcn.com/) + [Radix UI](https://www.radix-ui.com/)
+- **Ícones:** [Lucide React](https://lucide.dev/)
+- **Backend & Banco de Dados:** [Supabase](https://supabase.com/) (PostgreSQL + Auth)
+- **Roteamento:** [React Router DOM](https://reactrouter.com/)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🚀 Como Rodar o Projeto
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Pré-requisitos
+- Node.js instalado (v18 ou superior).
+- Uma conta no [Supabase](https://supabase.com/) (Gratuito).
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 1. Clone o repositório
+```bash
+git clone [https://github.com/SEU_USUARIO/ruah.git](https://github.com/SEU_USUARIO/ruah.git)
+cd ruah
