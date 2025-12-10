@@ -8,15 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox" // Importe o Checkbox
 import { supabase } from "@/lib/supabase"
 import { Save, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
 import { useSearchParams, Link } from "react-router-dom"
-
-// Lista fixa de categorias permitidas
-const CATEGORIAS_DISPONIVEIS = [
-  "Adoração", "Louvor", "Animação", "Fraternidade", "Espírito Santo", "Maria",
-  "Entrada", "Ato Penitencial", "Santo", "Aclamação do Evangelho", "Ofertório", "Ação de Graças",
-  "Comunhão", "Canto Final", "Páscoa", "Natal"
-  // "Louvor", "Adoração", "Espiritualidade", "Litúrgico", 
-  // "Mariano", "Penitencial", "Vocacional", "Páscoa", "Natal"
-]
+import { CATEGORIAS_DISPONIVEIS } from "@/constants/categories"
 
 export function AdminPage() {
   const [searchParams] = useSearchParams()
@@ -28,7 +20,7 @@ export function AdminPage() {
   // Estado do formulário
   const [form, setForm] = useState({
     titulo: "",
-    artista: "Comunidade Shalom",
+    artista: "",
     numero: "",
     letra: "",
     categorias: [] as string[] // Agora é um Array
@@ -160,6 +152,8 @@ export function AdminPage() {
                 <div className="space-y-3">
                     <Label>Categorias (Selecione uma ou mais)</Label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-md border border-zinc-100 dark:border-zinc-800">
+                      
+                      {/* Usamos a constante importada para gerar a lista */}
                       {CATEGORIAS_DISPONIVEIS.map(cat => (
                         <div key={cat} className="flex items-center space-x-2">
                           <Checkbox 
@@ -167,14 +161,12 @@ export function AdminPage() {
                             checked={form.categorias.includes(cat)}
                             onCheckedChange={() => toggleCategoria(cat)}
                           />
-                          <label
-                            htmlFor={cat}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                          >
+                          <label htmlFor={cat} className="...">
                             {cat}
                           </label>
                         </div>
                       ))}
+                      
                     </div>
                 </div>
 
