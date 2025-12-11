@@ -50,7 +50,7 @@ export function Navbar() {
 
                     {/* Se estiver logado (ou se quiser deixar visível o link da análise) */}
                     <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-4" />
-                    <MobileLink href="/admin" icon={WifiOff}>Salvas</MobileLink>
+                    <MobileLink href="/salvas" icon={WifiOff}>Salvas</MobileLink>
                   </div>
                 </SheetContent>
               </Sheet>
