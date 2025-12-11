@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { SearchCommand } from "./SearchCommand"
-import { Menu, Sun, Moon, Home, List, LogIn, Mic2, Music, PlusCircle } from "lucide-react"
+import { Menu, Sun, Moon, Home, List, Mic2, Music, PlusCircle, WifiOff } from "lucide-react"
 import { useTheme } from "@/lib/useTheme"
 import { Button } from "@/components/ui/button"
 import {
@@ -50,7 +50,7 @@ export function Navbar() {
 
                     {/* Se estiver logado (ou se quiser deixar visível o link da análise) */}
                     <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-4" />
-                    <MobileLink href="/admin" icon={LogIn}>Área Admin</MobileLink>
+                    <MobileLink href="/admin" icon={WifiOff}>Salvas</MobileLink>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -64,9 +64,6 @@ export function Navbar() {
             </Link>
         </div>
 
-        {/* Centro: Busca (Visível em Desktop e Mobile reduzido) */}
-        {/* Centro: Busca */}
-        {/* Adicionei 'min-w-0' para permitir que o flexbox encolha esse item se apertar */}
         <div className="flex-1 max-w-lg mx-2 md:mx-4 min-w-0"> 
             <SearchCommand />
         </div>
@@ -88,17 +85,12 @@ export function Navbar() {
              <Link to="/categorias" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Categorias</Link>
              <Link to="/artistas" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Artistas</Link>
              <Link to="/musicas" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Músicas</Link>
+             <Link to="/salvas" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Offline</Link>
              <Link to="/contribuir">
                 <Button variant="outline" size="sm" className="hidden md:flex gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
                     <PlusCircle className="w-4 h-4" /> Contribuir
                 </Button>
              </Link>
-             <Link to="/admin-dashboard">
-                <Button variant="outline" size="sm" className="hidden md:flex gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
-                    <LogIn className="w-4 h-4" /> Área Admin
-                </Button>
-             </Link>
-             {/* <Link to="/musicas" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Área Admin</Link> */}
           </div>
 
           {/* Avatar */}

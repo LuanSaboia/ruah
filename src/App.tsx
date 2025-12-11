@@ -1,46 +1,91 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom"
+
+// Importações das Páginas
 import { HomePage } from "@/pages/HomePage"
 import { SongPage } from "@/pages/SongPage"
-import { AdminPage } from "@/pages/AdminPage" // <--- Importe aqui
-import { ArtistsPage } from "./pages/ArtistsPage"
-import { ArtistDetailsPage } from "./pages/ArtistDetailsPage"
-import { MusicasPage } from "./pages/MusicasPage"
-import { AdminListPage } from "./pages/AdminListPage"
-import { ProtectedLayout } from "./components/ProtectedLayout"
-import { LoginPage } from "./pages/LoginPage"
-import { CategoriesPage } from "./pages/CategoriesPage"
-import { ContributePage } from "./pages/ContributePage"
-import { AdminReviewPage } from "./pages/AdminReviewPage"
-import { AdminDashboard } from "./pages/AdminDashboard"
+import { AdminPage } from "@/pages/AdminPage"
+import { ArtistsPage } from "@/pages/ArtistsPage"
+import { ArtistDetailsPage } from "@/pages/ArtistDetailsPage"
+import { MusicasPage } from "@/pages/MusicasPage"
+import { AdminListPage } from "@/pages/AdminListPage"
+import { ProtectedLayout } from "@/components/ProtectedLayout"
+import { LoginPage } from "@/pages/LoginPage"
+import { CategoriesPage } from "@/pages/CategoriesPage"
+import { ContributePage } from "@/pages/ContributePage"
+import { AdminReviewPage } from "@/pages/AdminReviewPage"
+import { AdminDashboard } from "@/pages/AdminDashboard"
+import { SavedSongsPage } from "@/pages/SavedSongsPage" // <--- Importe a página de Salvas
 
+// 1. Criamos um componente interno para poder usar os hooks de navegação
+function AppRoutes() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Estado para controlar offline (opcional visualmente, mas útil pra lógica)
+  const [_isOffline, setIsOffline] = useState(!navigator.onLine)
+
+  useEffect(() => {
+    const handleOffline = () => {
+      setIsOffline(true)
+      // Se a internet cair e o usuário estiver na Home, joga ele para as músicas salvas
+      if (location.pathname === "/") {
+        navigate("/salvas")
+      }
+    }
+    
+    const handleOnline = () => setIsOffline(false)
+
+    window.addEventListener('offline', handleOffline)
+    window.addEventListener('online', handleOnline)
+
+    // Verificação inicial: Se abrir o app já sem net na Home, redireciona
+    if (!navigator.onLine && location.pathname === "/") {
+      navigate("/salvas")
+    }
+
+    return () => {
+      window.removeEventListener('offline', handleOffline)
+      window.removeEventListener('online', handleOnline)
+    }
+  }, [navigate, location])
+
+  return (
+    <Routes>
+      {/* Rotas Públicas */}
+      <Route path="/" element={<HomePage />} />
+      <Route path="/musica/:id" element={<SongPage />} />
+      <Route path="/musicas" element={<MusicasPage />} />
+      
+      {/* Rota Nova: Músicas Offline */}
+      <Route path="/salvas" element={<SavedSongsPage />} />
+
+      <Route path="/artistas" element={<ArtistsPage />} />
+      <Route path="/artista/:nome" element={<ArtistDetailsPage />} />
+      <Route path="/categorias" element={<CategoriesPage />} />
+      
+      <Route path="/contribuir" element={<ContributePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      
+      {/* Rotas Protegidas (Admin) */}
+      <Route element={<ProtectedLayout />}>
+        {/* Mantive o /admin apontando para o cadastro secreto conforme seu arquivo original */}
+        <Route path="/admin" element={<AdminPage />} /> 
+        <Route path="/admin-secret-cadastro" element={<AdminPage />} />
+        
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin-list" element={<AdminListPage />} />
+        <Route path="/admin-analise" element={<AdminReviewPage />} />
+      </Route>
+    </Routes>
+  )
+}
+
+// 2. O App principal apenas fornece o BrowserRouter para o AppRoutes funcionar
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/musica/:id" element={<SongPage />} />
-
-        <Route path="/musicas" element={<MusicasPage />} />
-
-        <Route path="/artistas" element={<ArtistsPage />} />
-        <Route path="/artista/:nome" element={<ArtistDetailsPage />} />
-
-        <Route path="/contribuir" element={<ContributePage />} />
-
-        {/* Rota de Categorias */}
-        <Route path="/categorias" element={<CategoriesPage />} />
-        
-        {/* Rota de Login */}
-        <Route path="/login" element={<LoginPage />} />
-        
-        {/* Rotas Protegidas (Grupo Admin) */}
-        <Route element={<ProtectedLayout />}>
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin-list" element={<AdminListPage />} />
-          <Route path="/admin-analise" element={<AdminReviewPage />} />
-        </Route>
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
   )
 }

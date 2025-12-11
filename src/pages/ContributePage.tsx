@@ -16,6 +16,7 @@ export function ContributePage() {
   const [form, setForm] = useState({
     titulo: "",
     artista: "",
+    numero: "", // <--- Campo Novo
     enviado_por: "",
     letra: "",
     categorias: [] as string[]
@@ -42,6 +43,8 @@ export function ContributePage() {
       const { error } = await supabase.from('sugestoes').insert([{
         titulo: form.titulo,
         artista: form.artista,
+        // Envia o número (se tiver) ou null
+        numero_cantai: form.numero ? parseInt(form.numero) : null, 
         enviado_por: form.enviado_por || "Anônimo",
         letra: form.letra,
         categoria: form.categorias.length > 0 ? form.categorias : ["Geral"]
@@ -50,7 +53,7 @@ export function ContributePage() {
       if (error) throw error
 
       setStatus({ type: 'success', msg: "Sugestão enviada! Obrigado por contribuir." })
-      setForm({ titulo: "", artista: "", enviado_por: "", letra: "", categorias: [] })
+      setForm({ titulo: "", artista: "", numero: "", enviado_por: "", letra: "", categorias: [] })
       
     } catch (error: any) {
       setStatus({ type: 'error', msg: "Erro ao enviar. Tente novamente." })
@@ -72,9 +75,9 @@ export function ContributePage() {
         <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
             <form onSubmit={handleSubmit} className="space-y-6">
                 
-                {/* Título e Artista */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                {/* Linha 1: Título (Maior), Artista e Número */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="md:col-span-2 space-y-2">
                         <Label>Título da Música</Label>
                         <Input required placeholder="Ex: Kyrie Eleison" value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} />
                     </div>
@@ -82,12 +85,21 @@ export function ContributePage() {
                         <Label>Artista / Banda</Label>
                         <Input required placeholder="Ex: Shalom" value={form.artista} onChange={e => setForm({...form, artista: e.target.value})} />
                     </div>
+                    <div className="space-y-2">
+                        <Label>Nº Cantai</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="000" 
+                          value={form.numero} 
+                          onChange={e => setForm({...form, numero: e.target.value})} 
+                        />
+                    </div>
                 </div>
 
                 {/* Categorias */}
                 <div className="space-y-3">
                     <Label>Categorias Sugeridas</Label>
-                    <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 border rounded-md">
+                    <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 border rounded-md dark:border-zinc-700">
                       {CATEGORIAS_DISPONIVEIS.map(cat => (
                         <div key={cat} className="flex items-center space-x-2">
                           <Checkbox id={`sug-${cat}`} checked={form.categorias.includes(cat)} onCheckedChange={() => toggleCategoria(cat)} />
@@ -106,7 +118,7 @@ export function ContributePage() {
                 {/* Nome do Contribuidor */}
                 <div className="space-y-2">
                     <Label>Seu Nome (Opcional)</Label>
-                    <Input placeholder="Para sabermos quem agradeçer" value={form.enviado_por} onChange={e => setForm({...form, enviado_por: e.target.value})} />
+                    <Input placeholder="Para sabermos quem agradecer" value={form.enviado_por} onChange={e => setForm({...form, enviado_por: e.target.value})} />
                 </div>
 
                 {/* Feedback */}
