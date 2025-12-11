@@ -47,7 +47,8 @@ export function AdminReviewPage() {
         artista: form.artista,
         letra: form.letra,
         categoria: form.categoria || ["Geral"],
-        numero_cantai: form.numero_cantai
+        numero_cantai: form.numero_cantai,
+        enviado_por: suggestion.enviado_por
       }])
 
       if (!error) {

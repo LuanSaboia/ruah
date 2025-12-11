@@ -108,6 +108,13 @@ export function SongPage() {
             </p>
         </article>
 
+        {/* CRÉDITOS DA MÚSICA */}
+        <div className="mt-12 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+            <p className="text-sm text-zinc-400 italic">
+                Enviado por: <span className="text-zinc-600 dark:text-zinc-300 font-medium">{song.enviado_por || "Colaborador Ruah"}</span>
+            </p>
+        </div>
+
       </main>
     </div>
   )

@@ -11,6 +11,7 @@ import { LoginPage } from "./pages/LoginPage"
 import { CategoriesPage } from "./pages/CategoriesPage"
 import { ContributePage } from "./pages/ContributePage"
 import { AdminReviewPage } from "./pages/AdminReviewPage"
+import { AdminDashboard } from "./pages/AdminDashboard"
 
 function App() {
   return (
@@ -34,8 +35,9 @@ function App() {
         
         {/* Rotas Protegidas (Grupo Admin) */}
         <Route element={<ProtectedLayout />}>
-          <Route path="/admin-list" element={<AdminListPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin-list" element={<AdminListPage />} />
           <Route path="/admin-analise" element={<AdminReviewPage />} />
         </Route>
       </Routes>

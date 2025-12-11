@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { SearchCommand } from "./SearchCommand"
-import { Menu, Sun, Moon, Home, List, LogIn, Mic2, Music, PlusCircle, CheckSquare } from "lucide-react"
+import { Menu, Sun, Moon, Home, List, LogIn, Mic2, Music, PlusCircle } from "lucide-react"
 import { useTheme } from "@/lib/useTheme"
 import { Button } from "@/components/ui/button"
 import {
@@ -49,7 +49,6 @@ export function Navbar() {
                     <MobileLink href="/contribuir" icon={PlusCircle}>Contribuir</MobileLink>
 
                     {/* Se estiver logado (ou se quiser deixar visível o link da análise) */}
-                    {/* <MobileLink href="/admin-analise" icon={CheckSquare}>Análise</MobileLink> */}
                     <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-4" />
                     <MobileLink href="/admin" icon={LogIn}>Área Admin</MobileLink>
                   </div>
@@ -94,6 +93,12 @@ export function Navbar() {
                     <PlusCircle className="w-4 h-4" /> Contribuir
                 </Button>
              </Link>
+             <Link to="/admin-dashboard">
+                <Button variant="outline" size="sm" className="hidden md:flex gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
+                    <LogIn className="w-4 h-4" /> Área Admin
+                </Button>
+             </Link>
+             {/* <Link to="/musicas" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Área Admin</Link> */}
           </div>
 
           {/* Avatar */}
