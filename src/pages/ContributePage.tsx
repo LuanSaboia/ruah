@@ -16,7 +16,8 @@ export function ContributePage() {
   const [form, setForm] = useState({
     titulo: "",
     artista: "",
-    numero: "", // <--- Campo Novo
+    numero: "",
+    link_audio: "", // <--- Campo Novo
     enviado_por: "",
     letra: "",
     categorias: [] as string[]
@@ -43,8 +44,8 @@ export function ContributePage() {
       const { error } = await supabase.from('sugestoes').insert([{
         titulo: form.titulo,
         artista: form.artista,
-        // Envia o número (se tiver) ou null
-        numero_cantai: form.numero ? parseInt(form.numero) : null, 
+        numero_cantai: form.numero ? parseInt(form.numero) : null,
+        link_audio: form.link_audio, // <--- Envia o link
         enviado_por: form.enviado_por || "Anônimo",
         letra: form.letra,
         categoria: form.categorias.length > 0 ? form.categorias : ["Geral"]
@@ -53,7 +54,7 @@ export function ContributePage() {
       if (error) throw error
 
       setStatus({ type: 'success', msg: "Sugestão enviada! Obrigado por contribuir." })
-      setForm({ titulo: "", artista: "", numero: "", enviado_por: "", letra: "", categorias: [] })
+      setForm({ titulo: "", artista: "", numero: "", link_audio: "", enviado_por: "", letra: "", categorias: [] })
       
     } catch (error: any) {
       setStatus({ type: 'error', msg: "Erro ao enviar. Tente novamente." })
@@ -75,7 +76,7 @@ export function ContributePage() {
         <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
             <form onSubmit={handleSubmit} className="space-y-6">
                 
-                {/* Linha 1: Título (Maior), Artista e Número */}
+                {/* Linha 1 */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-2 space-y-2">
                         <Label>Título da Música</Label>
@@ -87,13 +88,18 @@ export function ContributePage() {
                     </div>
                     <div className="space-y-2">
                         <Label>Nº Cantai</Label>
-                        <Input 
-                          type="number" 
-                          placeholder="000" 
-                          value={form.numero} 
-                          onChange={e => setForm({...form, numero: e.target.value})} 
-                        />
+                        <Input type="number" placeholder="000" value={form.numero} onChange={e => setForm({...form, numero: e.target.value})} />
                     </div>
+                </div>
+
+                {/* Linha 2: Link de Áudio (NOVO) */}
+                <div className="space-y-2">
+                    <Label>Link para Ouvir (YouTube/Spotify) - Opcional</Label>
+                    <Input 
+                      placeholder="https://youtu.be/..." 
+                      value={form.link_audio} 
+                      onChange={e => setForm({...form, link_audio: e.target.value})} 
+                    />
                 </div>
 
                 {/* Categorias */}

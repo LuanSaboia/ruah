@@ -22,6 +22,7 @@ export function AdminPage() {
     titulo: "",
     artista: "",
     numero: "",
+    link_audio: "",
     letra: "",
     categorias: [] as string[] // Agora é um Array
   })
@@ -36,6 +37,7 @@ export function AdminPage() {
             titulo: data.titulo,
             artista: data.artista,
             numero: data.numero_cantai ? String(data.numero_cantai) : "",
+            link_audio: data.link_audio || "",
             letra: data.letra,
             categorias: data.categoria || [] // Garante que seja array
           })
@@ -66,6 +68,7 @@ export function AdminPage() {
       artista: form.artista,
       categoria: form.categorias, // Envia o array
       numero_cantai: form.numero ? parseInt(form.numero) : null,
+      link_audio: form.link_audio,
       letra: form.letra
     }
 
@@ -145,6 +148,15 @@ export function AdminPage() {
                         id="artista" 
                         value={form.artista} 
                         onChange={e => setForm({...form, artista: e.target.value})} 
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="link">Link para Ouvir (YouTube/Spotify)</Label>
+                    <Input 
+                        id="link" 
+                        placeholder="https://youtu.be/..." 
+                        value={form.link_audio} 
+                        onChange={e => setForm({...form, link_audio: e.target.value})} 
                     />
                 </div>
 

@@ -4,9 +4,24 @@ import { supabase } from "@/lib/supabase"
 import { Navbar } from "@/components/Navbar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Share2, Heart, Loader2, Download, Check } from "lucide-react"
+import { ArrowLeft, Share2, Heart, Loader2, Download, Check, PlayCircle } from "lucide-react"
 import type { Musica } from "@/types"
-import { storage } from "@/lib/storage" // Importe o storage
+import { storage } from "@/lib/storage"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
+// Função auxiliar para pegar o ID do vídeo do YouTube
+function getYouTubeId(url: string | null) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
 
 export function SongPage() {
   const { id } = useParams()
@@ -14,12 +29,14 @@ export function SongPage() {
   const [loading, setLoading] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
 
+  // Estado para controlar o modal do vídeo
+  const [isVideoOpen, setIsVideoOpen] = useState(false)
+
   useEffect(() => {
     async function fetchSong() {
       if (!id) return;
       setLoading(true)
 
-      // ESTRATÉGIA: Network First, Fallback to Cache
       // 1. Tenta buscar no Banco de Dados (Online)
       const { data, error } = await supabase
         .from('musicas')
@@ -28,33 +45,20 @@ export function SongPage() {
         .single()
 
       if (!error && data) {
-        // Cenário A: Internet OK -> Usa dados do banco
         setSong(data)
       } else {
-        // Cenário B: Deu erro ou sem net -> Tenta buscar no LocalStorage
-        console.log("Erro de conexão ou música não encontrada no banco. Tentando offline...")
-        
+        // 2. Fallback Offline
         const savedSongs = storage.getSavedSongs()
         const localSong = savedSongs.find(s => s.id === Number(id))
-
-        if (localSong) {
-          setSong(localSong) // Achou offline! Salva o dia.
-        } else {
-          console.error("Música não encontrada nem no banco nem no offline.")
-        }
+        if (localSong) setSong(localSong) 
       }
-      
       setLoading(false)
     }
-
     fetchSong()
   }, [id])
 
-  // Monitora se a música atual está salva (para pintar o botão de download)
   useEffect(() => {
-    if (song) {
-      setIsSaved(storage.isSaved(song.id))
-    }
+    if (song) setIsSaved(storage.isSaved(song.id))
   }, [song])
 
   const toggleSave = () => {
@@ -68,8 +72,9 @@ export function SongPage() {
     }
   }
 
-  // ... (Mantenha o restante do código de Loading, Erro e JSX igualzinho estava)
-  // Estado de Carregamento
+  // Extrai o ID do vídeo se tiver link
+  const youtubeId = song ? getYouTubeId(song.link_audio || "") : null
+
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center transition-colors">
@@ -78,19 +83,11 @@ export function SongPage() {
     )
   }
 
-  // Estado de Erro / Não encontrado
   if (!song) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center justify-center gap-4 transition-colors">
-        <p className="text-zinc-500">Música não encontrada ou sem conexão.</p>
-        <div className="flex gap-2">
-            <Link to="/">
-            <Button variant="outline">Ir para o Início</Button>
-            </Link>
-            <Link to="/salvas">
-            <Button className="bg-green-600 hover:bg-green-700 text-white">Ver Músicas Salvas</Button>
-            </Link>
-        </div>
+        <p className="text-zinc-500">Música não encontrada.</p>
+        <Link to="/"><Button variant="outline">Início</Button></Link>
       </div>
     )
   }
@@ -101,22 +98,52 @@ export function SongPage() {
       
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         
-        {/* Botão Voltar */}
         <Link to="/">
             <Button variant="ghost" className="mb-4 pl-0 hover:bg-transparent hover:text-blue-600 dark:hover:text-blue-400 gap-2 text-zinc-600 dark:text-zinc-400">
                 <ArrowLeft className="w-4 h-4" /> Voltar
             </Button>
         </Link>
 
-        {/* Cabeçalho da Música */}
+        {/* Header */}
         <div className="mb-8 border-b border-zinc-200 dark:border-zinc-800 pb-6">
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-bold mb-2 text-zinc-900 dark:text-white">{song.titulo}</h1>
                     <p className="text-xl text-blue-600 dark:text-blue-400 font-medium">{song.artista}</p>
                 </div>
-                <div className="flex gap-2">
-                    {/* Botão de Download / Offline */}
+                
+                <div className="flex gap-2 self-start md:self-auto">
+                    
+                    {/* Botão OUVIR com MODAL */}
+                    {youtubeId && (
+                        <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" className="gap-2 text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50 dark:bg-red-900/10 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/30">
+                                <PlayCircle className="w-4 h-4" /> 
+                                <span className="hidden sm:inline">Ouvir</span>
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[600px] p-0 bg-black border-zinc-800 overflow-hidden">
+                            <DialogHeader className="p-4 absolute top-0 left-0 z-10 w-full bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+                              <DialogTitle className="text-white text-sm font-medium drop-shadow-md">{song.titulo} - {song.artista}</DialogTitle>
+                            </DialogHeader>
+                            {/* O Player do Youtube (Iframe) */}
+                            <div className="aspect-video w-full">
+                              <iframe 
+                                width="100%" 
+                                height="100%" 
+                                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`} 
+                                title="YouTube video player" 
+                                frameBorder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowFullScreen
+                              ></iframe>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                    )}
+
+                    {/* Botão DOWNLOAD */}
                     <Button 
                       variant="outline" 
                       size="icon" 
@@ -149,14 +176,13 @@ export function SongPage() {
             </div>
         </div>
 
-        {/* A Letra */}
+        {/* Letra */}
         <article className="prose prose-zinc max-w-none">
             <p className="whitespace-pre-line text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium">
                 {song.letra}
             </p>
         </article>
 
-        {/* Créditos */}
         <div className="mt-12 pt-6 border-t border-zinc-100 dark:border-zinc-800">
             <p className="text-sm text-zinc-400 italic">
                 Enviado por: <span className="text-zinc-600 dark:text-zinc-300 font-medium">{song.enviado_por || "Colaborador Ruah"}</span>

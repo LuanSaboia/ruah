@@ -4,7 +4,8 @@ export interface Musica {
   artista: string
   letra?: string
   categoria: string
-  numero_cantai?: number // Opcional, caso tenha
-  enviado_por?: string,
+  numero_cantai?: number
+  enviado_por?: string
+  link_audio?: string
   created_at?: string
 }

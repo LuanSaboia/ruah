@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { Loader2, Check, X, User } from "lucide-react"
 import {
   Dialog,
@@ -48,7 +49,8 @@ export function AdminReviewPage() {
         letra: form.letra,
         categoria: form.categoria || ["Geral"],
         numero_cantai: form.numero_cantai,
-        enviado_por: suggestion.enviado_por
+        enviado_por: suggestion.enviado_por,
+        link_audio: form.link_audio // <--- Salva o link na tabela oficial
       }])
 
       if (!error) {
@@ -76,16 +78,37 @@ export function AdminReviewPage() {
           
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
-              <Input placeholder="Título" value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} />
-              <Input placeholder="Artista" value={form.artista} onChange={e => setForm({...form, artista: e.target.value})} />
+              <div className="space-y-2">
+                <Label>Título</Label>
+                <Input value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label>Artista</Label>
+                <Input value={form.artista} onChange={e => setForm({...form, artista: e.target.value})} />
+              </div>
             </div>
-            <Textarea 
-              placeholder="Letra" 
-              className="min-h-[300px] font-mono" 
-              value={form.letra} 
-              onChange={e => setForm({...form, letra: e.target.value})} 
-            />
-            <p className="text-sm text-zinc-500">Categorias: {Array.isArray(form.categoria) ? form.categoria.join(", ") : form.categoria}</p>
+
+            <div className="space-y-2">
+              <Label>Link de Áudio (Youtube)</Label>
+              <Input 
+                value={form.link_audio || ""} 
+                onChange={e => setForm({...form, link_audio: e.target.value})} 
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="space-y-2">
+                <Label>Letra</Label>
+                <Textarea 
+                className="min-h-[300px] font-mono" 
+                value={form.letra} 
+                onChange={e => setForm({...form, letra: e.target.value})} 
+                />
+            </div>
+            
+            <p className="text-sm text-zinc-500">
+                Categorias: {Array.isArray(form.categoria) ? form.categoria.join(", ") : form.categoria}
+            </p>
           </div>
 
           <DialogFooter>
@@ -118,7 +141,7 @@ export function AdminReviewPage() {
                   <p className="text-zinc-500 text-sm">{sug.artista} • <User className="w-3 h-3 inline"/> {sug.enviado_por}</p>
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
-                  <Button variant="outline" className="text-red-500 hover:bg-red-50 flex-1 md:flex-none" onClick={() => handleReject(sug.id)}>
+                  <Button variant="outline" className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 flex-1 md:flex-none" onClick={() => handleReject(sug.id)}>
                     <X className="w-4 h-4" />
                   </Button>
                   <div className="flex-1 md:flex-none">
