@@ -3,7 +3,6 @@ import { Music, ChevronRight } from "lucide-react"
 interface SongListItemProps {
   title: string;
   artist: string;
-  // MUDANÇA AQUI: Aceita string (antigo) ou array de strings (novo)
   category?: string | string[]; 
   numero?: number;
   onClick?: () => void;
