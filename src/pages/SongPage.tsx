@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { AutoScroll } from "@/components/AutoScroll"
 
 // Função auxiliar para pegar o ID do vídeo do YouTube
 function getYouTubeId(url: string | null) {
@@ -218,7 +219,7 @@ export function SongPage() {
                 Enviado por: <span className="text-zinc-600 dark:text-zinc-300 font-medium">{song.enviado_por || "Colaborador Ruah"}</span>
             </p>
         </div>
-
+        <AutoScroll />
       </main>
     </div>
   )
