@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CifraDisplay } from "@/components/CifraDisplay"
-import { ArrowLeft, Share2, Heart, Loader2, Download, Check, PlayCircle, Guitar, FileText } from "lucide-react"
+import { ArrowLeft, Loader2, Download, Check, PlayCircle, Guitar, FileText } from "lucide-react"
 import type { Musica } from "@/types"
 import { storage } from "@/lib/storage"
 import {
@@ -160,12 +160,12 @@ export function SongPage() {
                         {isSaved ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
                     </Button>
 
-                    <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
+                    {/* <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
                         <Heart className="w-4 h-4" />
                     </Button>
                     <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
                         <Share2 className="w-4 h-4" />
-                    </Button>
+                    </Button> */}
                 </div>
             </div>
             
