@@ -21,10 +21,11 @@ export function ArtistDetailsPage() {
   useEffect(() => {
     async function fetchArtistSongs() {
       setLoading(true)
+      
       const { data, error } = await supabase
         .from('musicas')
         .select('*')
-        .eq('artista', artistName)
+        .ilike('artista', `%${artistName}%`) 
         .order('titulo', { ascending: true })
 
       if (error) console.error(error)

@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { supabase } from "@/lib/supabase"
-import { Send, CheckCircle2, AlertCircle } from "lucide-react"
+import { Send, CheckCircle2, AlertCircle, Music2, User, Link as LinkIcon, Hash } from "lucide-react"
 import { CATEGORIAS_DISPONIVEIS } from "@/constants/categories"
 
 export function ContributePage() {
@@ -17,7 +17,7 @@ export function ContributePage() {
     titulo: "",
     artista: "",
     numero: "",
-    link_audio: "", // <--- Campo Novo
+    link_audio: "",
     enviado_por: "",
     letra: "",
     categorias: [] as string[]
@@ -45,7 +45,7 @@ export function ContributePage() {
         titulo: form.titulo,
         artista: form.artista,
         numero_cantai: form.numero ? parseInt(form.numero) : null,
-        link_audio: form.link_audio, // <--- Envia o link
+        link_audio: form.link_audio,
         enviado_por: form.enviado_por || "Anônimo",
         letra: form.letra,
         categoria: form.categorias.length > 0 ? form.categorias : ["Geral"]
@@ -55,6 +55,7 @@ export function ContributePage() {
 
       setStatus({ type: 'success', msg: "Sugestão enviada! Obrigado por contribuir." })
       setForm({ titulo: "", artista: "", numero: "", link_audio: "", enviado_por: "", letra: "", categorias: [] })
+      window.scrollTo(0, 0)
       
     } catch (error: any) {
       setStatus({ type: 'error', msg: "Erro ao enviar. Tente novamente." })
@@ -68,76 +69,96 @@ export function ContributePage() {
       <Navbar />
       
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="mb-8">
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Envie uma Sugestão</h1>
-            <p className="text-zinc-500">Ajude a comunidade a crescer enviando músicas que faltam.</p>
+        <div className="mb-8 text-center md:text-left">
+            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Contribua com o Ruah</h1>
+            <p className="text-zinc-500 mt-2">Ajude a comunidade enviando músicas que ainda não temos.</p>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+            <form onSubmit={handleSubmit} className="space-y-8">
                 
-                {/* Linha 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="md:col-span-2 space-y-2">
-                        <Label>Título da Música</Label>
-                        <Input required placeholder="Ex: Kyrie Eleison" value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} />
+                <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider border-b pb-2 mb-4">Dados da Música</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2"><Music2 className="w-4 h-4 text-blue-500"/> Título</Label>
+                            <Input required placeholder="Ex: Kyrie Eleison" value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2"><User className="w-4 h-4 text-purple-500"/> Artista / Banda</Label>
+                            <Input 
+                                required 
+                                placeholder="Ex: Comunidade Shalom, Suely Façanha" 
+                                value={form.artista} 
+                                onChange={e => setForm({...form, artista: e.target.value})} 
+                            />
+                            <p className="text-[11px] text-zinc-400">
+                                Para mais de um artista, separe por vírgula ( <strong>,</strong> ).
+                            </p>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label>Artista / Banda</Label>
-                        <Input required placeholder="Ex: Shalom" value={form.artista} onChange={e => setForm({...form, artista: e.target.value})} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Nº Cantai</Label>
-                        <Input type="number" placeholder="000" value={form.numero} onChange={e => setForm({...form, numero: e.target.value})} />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2"><Hash className="w-4 h-4 text-zinc-400"/> Nº Cantai (Opcional)</Label>
+                            <Input type="number" placeholder="000" value={form.numero} onChange={e => setForm({...form, numero: e.target.value})} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2"><LinkIcon className="w-4 h-4 text-red-500"/> Link YouTube/Spotify</Label>
+                            <Input placeholder="https://..." value={form.link_audio} onChange={e => setForm({...form, link_audio: e.target.value})} />
+                        </div>
                     </div>
                 </div>
 
-                {/* Linha 2: Link de Áudio (NOVO) */}
-                <div className="space-y-2">
-                    <Label>Link para Ouvir (YouTube/Spotify) - Opcional</Label>
-                    <Input 
-                      placeholder="https://youtu.be/..." 
-                      value={form.link_audio} 
-                      onChange={e => setForm({...form, link_audio: e.target.value})} 
-                    />
-                </div>
-
-                {/* Categorias */}
+                {/* BLOCO 2: Categorias */}
                 <div className="space-y-3">
-                    <Label>Categorias Sugeridas</Label>
-                    <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 border rounded-md dark:border-zinc-700">
+                    <Label>Categorias</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-100 dark:border-zinc-800 max-h-48 overflow-y-auto">
                       {CATEGORIAS_DISPONIVEIS.map(cat => (
                         <div key={cat} className="flex items-center space-x-2">
                           <Checkbox id={`sug-${cat}`} checked={form.categorias.includes(cat)} onCheckedChange={() => toggleCategoria(cat)} />
-                          <label htmlFor={`sug-${cat}`} className="text-sm cursor-pointer">{cat}</label>
+                          <label htmlFor={`sug-${cat}`} className="text-sm cursor-pointer select-none">{cat}</label>
                         </div>
                       ))}
                     </div>
                 </div>
 
-                {/* Letra */}
+                {/* BLOCO 3: Conteúdo */}
                 <div className="space-y-2">
-                    <Label>Letra Completa</Label>
-                    <Textarea required placeholder="Cole a letra aqui..." className="min-h-[200px]" value={form.letra} onChange={e => setForm({...form, letra: e.target.value})} />
+                    <Label>Letra da Música</Label>
+                    <Textarea 
+                        required 
+                        placeholder="Cole a letra completa aqui..." 
+                        className="min-h-[250px] font-mono text-sm leading-relaxed p-4" 
+                        value={form.letra} 
+                        onChange={e => setForm({...form, letra: e.target.value})} 
+                    />
                 </div>
 
-                {/* Nome do Contribuidor */}
-                <div className="space-y-2">
-                    <Label>Seu Nome (Opcional)</Label>
-                    <Input placeholder="Para sabermos quem agradecer" value={form.enviado_por} onChange={e => setForm({...form, enviado_por: e.target.value})} />
+                {/* BLOCO 4: Identificação */}
+                <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                        <div className="space-y-2">
+                            <Label>Seu Nome (Opcional)</Label>
+                            <Input placeholder="Para os créditos..." value={form.enviado_por} onChange={e => setForm({...form, enviado_por: e.target.value})} />
+                        </div>
+                        
+                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white h-10" disabled={loading}>
+                            {loading ? "Enviando..." : <><Send className="w-4 h-4 mr-2" /> Enviar Sugestão</>}
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Feedback */}
                 {status && (
-                    <div className={`p-4 rounded-md flex items-center gap-2 ${status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                        {status.type === 'success' ? <CheckCircle2 className="w-5 h-5"/> : <AlertCircle className="w-5 h-5"/>}
-                        {status.msg}
+                    <div className={`p-4 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                        {status.type === 'success' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0"/> : <AlertCircle className="w-5 h-5 flex-shrink-0"/>}
+                        <p className="font-medium">{status.msg}</p>
                     </div>
                 )}
 
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
-                    {loading ? "Enviando..." : <><Send className="w-4 h-4 mr-2" /> Enviar Sugestão</>}
-                </Button>
             </form>
         </div>
       </main>

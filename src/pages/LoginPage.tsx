@@ -29,7 +29,7 @@ export function LoginPage() {
       setLoading(false)
     } else {
       // Sucesso! Vai para a lista de admin
-      navigate("/admin-list")
+      navigate("/admin-dashboard")
     }
   }
 

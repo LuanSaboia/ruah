@@ -23,9 +23,16 @@ export function ArtistsPage() {
       if (error) {
         console.error("Erro:", error)
       } else {
-        // Remove duplicatas (Set) e valores nulos
-        const uniqueArtists = Array.from(new Set(data?.map(item => item.artista).filter(Boolean)))
-        setArtists(uniqueArtists as string[])
+        const allArtists = data
+            ?.map(item => item.artista)
+            .join(',')
+            .split(',')
+            .map(a => a.trim())
+            .filter(Boolean)
+
+        const uniqueArtists = Array.from(new Set(allArtists)).sort()
+        
+        setArtists(uniqueArtists)
       }
       setLoading(false)
     }
