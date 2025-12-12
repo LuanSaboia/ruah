@@ -16,11 +16,11 @@ interface CifraDisplayProps {
 
 export function CifraDisplay({ content }: CifraDisplayProps) {
   const [semitones, setSemitones] = useState(0)
-  const [fontSize, setFontSize] = useState(16) // Tamanho base um pouco maior
+  const [fontSize, setFontSize] = useState(16)
 
   const lines = content.split('\n');
 
-  // Identifica o tom inicial (visual)
+  // Identifica o tom inicial (pega o primeiro acorde válido)
   const firstChord = parseCifraLine(content, 0).find(s => s.chord)?.chord || "?";
   const currentKey = parseCifraLine(`[${firstChord}]`, semitones)[0].chord;
 
@@ -61,24 +61,21 @@ export function CifraDisplay({ content }: CifraDisplayProps) {
         </div>
       </div>
 
-      {/* ÁREA DA CIFRA 
-          MUDANÇA: 'font-sans' em vez de 'font-mono' deixa a letra muito mais natural.
-          tracking-wide ajuda na leitura.
-      */}
       <div 
-        className="font-sans font-medium tracking-wide text-zinc-800 dark:text-zinc-300 overflow-x-auto pb-20 pt-4 px-1"
-        style={{ fontSize: `${fontSize}px`, lineHeight: '1.5' }}
+        className="font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto pb-20 pt-4 px-1"
+        style={{ fontSize: `${fontSize}px`, lineHeight: '1.6' }} // lineHeight mais relaxado
       >
         {lines.map((line, i) => (
-          <div key={i} className="flex flex-wrap items-end mb-6 min-h-[3em]">
+          // min-h-[3em] garante que linhas só com letra tenham espaço caso o tom mude e apareça acorde
+          <div key={i} className="flex flex-wrap items-end mb-4 min-h-[3em] w-full">
              {parseCifraLine(line, semitones).map((seg, j) => (
-                <div key={j} className="flex flex-col pr-0.5 group">
+                <div key={j} className="flex flex-col pr-0.5 group relative">
                    {/* Acorde */}
                    {seg.chord ? (
                      <HoverCard openDelay={0} closeDelay={0}>
                         <HoverCardTrigger asChild>
                             <span 
-                                className="text-blue-600 dark:text-blue-400 font-bold mb-1 leading-none cursor-pointer hover:scale-110 transition-transform origin-bottom-left touch-none min-w-[2ch]"
+                                className="text-blue-600 dark:text-blue-400 font-bold mb-1 leading-none cursor-pointer hover:scale-110 transition-transform origin-bottom-left touch-none select-none"
                                 onTouchStart={(e) => e.stopPropagation()} 
                             >
                                 {seg.chord}
@@ -96,11 +93,12 @@ export function CifraDisplay({ content }: CifraDisplayProps) {
                         </HoverCardContent>
                      </HoverCard>
                    ) : (
-                     <span className="h-[1.2em] mb-1"></span>
+                     // Espaço fantasma para manter a altura da linha uniforme
+                     <span className="h-[1.2em] mb-1 w-px"></span>
                    )}
                    
                    {/* Texto da Letra */}
-                   <span className="whitespace-pre leading-none text-zinc-700 dark:text-zinc-200">
+                   <span className="whitespace-pre leading-none">
                      {seg.text}
                    </span>
                 </div>
