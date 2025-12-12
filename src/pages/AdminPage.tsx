@@ -1,33 +1,31 @@
 import { useEffect, useState } from "react"
+import { useSearchParams, Link } from "react-router-dom"
+import { supabase } from "@/lib/supabase"
 import { Navbar } from "@/components/Navbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox" // Importe o Checkbox
-import { supabase } from "@/lib/supabase"
-import { Save, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
-import { useSearchParams, Link } from "react-router-dom"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Save, CheckCircle2, AlertCircle, ArrowLeft} from "lucide-react"
 import { CATEGORIAS_DISPONIVEIS } from "@/constants/categories"
 
 export function AdminPage() {
   const [searchParams] = useSearchParams()
-  const editId = searchParams.get('id') // Pega o ID da URL se existir
+  const editId = searchParams.get('id')
 
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null)
   
-  // Estado do formulário
   const [form, setForm] = useState({
     titulo: "",
     artista: "",
     numero: "",
     link_audio: "",
-    letra: "",
-    categorias: [] as string[] // Agora é um Array
+    conteudo: "", // Um único campo para Letra + Cifra
+    categorias: [] as string[]
   })
 
-  // Se for edição, carrega os dados
   useEffect(() => {
     if (editId) {
       async function fetchSong() {
@@ -38,8 +36,9 @@ export function AdminPage() {
             artista: data.artista,
             numero: data.numero_cantai ? String(data.numero_cantai) : "",
             link_audio: data.link_audio || "",
-            letra: data.letra,
-            categorias: data.categoria || [] // Garante que seja array
+            // PREFERÊNCIA: Se tiver cifra salva, carrega ela. Senão carrega a letra.
+            conteudo: data.cifra || data.letra, 
+            categorias: data.categoria || []
           })
         }
       }
@@ -63,24 +62,27 @@ export function AdminPage() {
     setLoading(true)
     setStatus(null)
 
+    // LÓGICA INTELIGENTE:
+    // 1. O 'conteudo' completo (com [G]) vai para o campo 'cifra'
+    // 2. Criamos uma versão limpa (sem [G]) para o campo 'letra' (para busca e leitura)
+    const letraLimpa = form.conteudo.replace(/\[.*?\]/g, "")
+
     const payload = {
       titulo: form.titulo,
       artista: form.artista,
-      categoria: form.categorias, // Envia o array
+      categoria: form.categorias,
       numero_cantai: form.numero ? parseInt(form.numero) : null,
       link_audio: form.link_audio,
-      letra: form.letra
+      letra: letraLimpa,
+      cifra: form.conteudo // Salva o original com acordes aqui
     }
 
     try {
       let error;
-      
       if (editId) {
-        // ATUALIZAR
         const res = await supabase.from('musicas').update(payload).eq('id', editId)
         error = res.error
       } else {
-        // CRIAR NOVO
         const res = await supabase.from('musicas').insert([payload])
         error = res.error
       }
@@ -88,7 +90,7 @@ export function AdminPage() {
       if (error) throw error
 
       setStatus({ type: 'success', msg: editId ? "Música atualizada!" : "Música cadastrada!" })
-      if (!editId) setForm({ ...form, titulo: "", numero: "", letra: "", categorias: [] }) 
+      if (!editId) setForm({ ...form, titulo: "", numero: "", link_audio: "", conteudo: "", categorias: [] }) 
       
     } catch (error: any) {
       setStatus({ type: 'error', msg: error.message || "Erro ao salvar." })
@@ -119,83 +121,59 @@ export function AdminPage() {
         <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
             <form onSubmit={handleSubmit} className="space-y-6">
                 
-                {/* Título e Número */}
+                {/* Linha 1 */}
                 <div className="grid grid-cols-4 gap-4">
                     <div className="col-span-3 space-y-2">
                         <Label htmlFor="titulo">Título</Label>
-                        <Input 
-                            id="titulo" 
-                            placeholder="Ex: Ressuscitou" 
-                            required 
-                            value={form.titulo} 
-                            onChange={e => setForm({...form, titulo: e.target.value})} 
-                        />
+                        <Input id="titulo" required value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} />
                     </div>
                     <div className="col-span-1 space-y-2">
                         <Label htmlFor="numero">Nº</Label>
-                        <Input 
-                            id="numero" type="number" 
-                            value={form.numero} 
-                            onChange={e => setForm({...form, numero: e.target.value})} 
-                        />
+                        <Input id="numero" type="number" value={form.numero} onChange={e => setForm({...form, numero: e.target.value})} />
                     </div>
                 </div>
 
-                {/* Artista */}
+                {/* Linha 2 */}
                 <div className="space-y-2">
                     <Label htmlFor="artista">Artista</Label>
-                    <Input 
-                        id="artista" 
-                        value={form.artista} 
-                        onChange={e => setForm({...form, artista: e.target.value})} 
-                    />
+                    <Input id="artista" value={form.artista} onChange={e => setForm({...form, artista: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="link">Link para Ouvir (YouTube/Spotify)</Label>
-                    <Input 
-                        id="link" 
-                        placeholder="https://youtu.be/..." 
-                        value={form.link_audio} 
-                        onChange={e => setForm({...form, link_audio: e.target.value})} 
-                    />
+                    <Label htmlFor="link">Link YouTube (Opcional)</Label>
+                    <Input id="link" value={form.link_audio} onChange={e => setForm({...form, link_audio: e.target.value})} />
                 </div>
 
-                {/* Multiselect de Categorias */}
+                {/* Categorias */}
                 <div className="space-y-3">
-                    <Label>Categorias (Selecione uma ou mais)</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-md border border-zinc-100 dark:border-zinc-800">
-                      
-                      {/* Usamos a constante importada para gerar a lista */}
+                    <Label>Categorias</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-md border border-zinc-100 dark:border-zinc-800 max-h-40 overflow-y-auto">
                       {CATEGORIAS_DISPONIVEIS.map(cat => (
                         <div key={cat} className="flex items-center space-x-2">
-                          <Checkbox 
-                            id={cat} 
-                            checked={form.categorias.includes(cat)}
-                            onCheckedChange={() => toggleCategoria(cat)}
-                          />
-                          <label htmlFor={cat} className="...">
-                            {cat}
-                          </label>
+                          <Checkbox id={cat} checked={form.categorias.includes(cat)} onCheckedChange={() => toggleCategoria(cat)} />
+                          <label htmlFor={cat} className="text-sm cursor-pointer select-none">{cat}</label>
                         </div>
                       ))}
-                      
                     </div>
                 </div>
 
-                {/* Letra */}
+                {/* CAMPO ÚNICO DE CONTEÚDO */}
                 <div className="space-y-2">
-                    <Label htmlFor="letra">Letra</Label>
+                    <Label htmlFor="conteudo" className="flex items-center gap-2">
+                        Letra e Cifra
+                    </Label>
+                    <p className="text-xs text-zinc-500">
+                        Para adicionar cifras, use colchetes no meio da letra. Ex: <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 rounded">[G]Aleluia</span>. Se não usar colchetes, será salvo apenas como letra.
+                    </p>
                     <Textarea 
-                        id="letra" 
-                        placeholder="Cole a letra..." 
-                        className="min-h-[300px] font-mono text-sm"
+                        id="conteudo" 
+                        placeholder="" 
+                        className="min-h-[300px] font-mono text-sm leading-relaxed"
                         required 
-                        value={form.letra} 
-                        onChange={e => setForm({...form, letra: e.target.value})} 
+                        value={form.conteudo} 
+                        onChange={e => setForm({...form, conteudo: e.target.value})} 
                     />
                 </div>
 
-                {/* Feedback */}
                 {status && (
                     <div className={`p-4 rounded-md flex items-center gap-2 ${status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                         {status.type === 'success' ? <CheckCircle2 className="w-5 h-5"/> : <AlertCircle className="w-5 h-5"/>}
@@ -204,7 +182,7 @@ export function AdminPage() {
                 )}
 
                 <Button type="submit" className="w-full bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900" disabled={loading}>
-                    {loading ? "Salvando..." : <><Save className="w-4 h-4 mr-2" /> {editId ? "Atualizar Música" : "Salvar Música"}</>}
+                    {loading ? "Salvando..." : <><Save className="w-4 h-4 mr-2" /> Salvar Música</>}
                 </Button>
 
             </form>

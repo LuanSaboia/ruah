@@ -4,7 +4,8 @@ import { supabase } from "@/lib/supabase"
 import { Navbar } from "@/components/Navbar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Share2, Heart, Loader2, Download, Check, PlayCircle } from "lucide-react"
+import { CifraDisplay } from "@/components/CifraDisplay"
+import { ArrowLeft, Share2, Heart, Loader2, Download, Check, PlayCircle, Guitar, FileText } from "lucide-react"
 import type { Musica } from "@/types"
 import { storage } from "@/lib/storage"
 import {
@@ -28,8 +29,10 @@ export function SongPage() {
   const [song, setSong] = useState<Musica | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
-
-  // Estado para controlar o modal do vídeo
+  
+  // Estado das Abas (Letra vs Cifra)
+  const [showCifra, setShowCifra] = useState(false)
+  // Estado do Modal de Vídeo
   const [isVideoOpen, setIsVideoOpen] = useState(false)
 
   useEffect(() => {
@@ -46,11 +49,19 @@ export function SongPage() {
 
       if (!error && data) {
         setSong(data)
+        // DETECÇÃO AUTOMÁTICA: Se tiver '[', já abre na aba Cifra
+        if (data.cifra && data.cifra.includes('[')) {
+            setShowCifra(true)
+        }
       } else {
         // 2. Fallback Offline
+        console.log("Tentando offline...")
         const savedSongs = storage.getSavedSongs()
         const localSong = savedSongs.find(s => s.id === Number(id))
-        if (localSong) setSong(localSong) 
+        if (localSong) {
+            setSong(localSong)
+            if (localSong.cifra && localSong.cifra.includes('[')) setShowCifra(true)
+        }
       }
       setLoading(false)
     }
@@ -72,8 +83,10 @@ export function SongPage() {
     }
   }
 
-  // Extrai o ID do vídeo se tiver link
   const youtubeId = song ? getYouTubeId(song.link_audio || "") : null
+
+  // Variável inteligente: Só considera que "tem cifra" se houver colchetes no texto
+  const hasCifra = song?.cifra && song.cifra.includes('[')
 
   if (loading) {
     return (
@@ -105,7 +118,7 @@ export function SongPage() {
         </Link>
 
         {/* Header */}
-        <div className="mb-8 border-b border-zinc-200 dark:border-zinc-800 pb-6">
+        <div className="mb-6 pb-6 border-b border-zinc-200 dark:border-zinc-800">
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-bold mb-2 text-zinc-900 dark:text-white">{song.titulo}</h1>
@@ -113,28 +126,24 @@ export function SongPage() {
                 </div>
                 
                 <div className="flex gap-2 self-start md:self-auto">
-                    
-                    {/* Botão OUVIR com MODAL */}
+                    {/* Botão OUVIR */}
                     {youtubeId && (
                         <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
                           <DialogTrigger asChild>
-                            <Button variant="outline" className="gap-2 text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50 dark:bg-red-900/10 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/30">
+                            <Button variant="outline" className="gap-2 text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50 dark:bg-red-900/10 dark:border-red-900 dark:text-red-400">
                                 <PlayCircle className="w-4 h-4" /> 
                                 <span className="hidden sm:inline">Ouvir</span>
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="sm:max-w-[600px] p-0 bg-black border-zinc-800 overflow-hidden">
                             <DialogHeader className="p-4 absolute top-0 left-0 z-10 w-full bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
-                              <DialogTitle className="text-white text-sm font-medium drop-shadow-md">{song.titulo} - {song.artista}</DialogTitle>
+                              <DialogTitle className="text-white text-sm font-medium drop-shadow-md">{song.titulo}</DialogTitle>
                             </DialogHeader>
-                            {/* O Player do Youtube (Iframe) */}
                             <div className="aspect-video w-full">
                               <iframe 
-                                width="100%" 
-                                height="100%" 
+                                width="100%" height="100%" 
                                 src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`} 
-                                title="YouTube video player" 
-                                frameBorder="0" 
+                                title="YouTube video player" frameBorder="0" 
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 allowFullScreen
                               ></iframe>
@@ -145,9 +154,7 @@ export function SongPage() {
 
                     {/* Botão DOWNLOAD */}
                     <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={toggleSave}
+                      variant="outline" size="icon" onClick={toggleSave}
                       className={isSaved ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400" : "dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"}
                     >
                         {isSaved ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
@@ -176,12 +183,35 @@ export function SongPage() {
             </div>
         </div>
 
-        {/* Letra */}
-        <article className="prose prose-zinc max-w-none">
-            <p className="whitespace-pre-line text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium">
-                {song.letra}
-            </p>
-        </article>
+        {/* --- BARRA DE ABAS --- */}
+        {/* Só mostra a barra se tiver cifra real (com colchetes). Se não, mostra só letra direto */}
+        {hasCifra && (
+            <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 dark:border-zinc-800">
+                <button 
+                    onClick={() => setShowCifra(false)}
+                    className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${!showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}
+                >
+                    <FileText className="w-4 h-4" /> Letra
+                </button>
+                <button 
+                    onClick={() => setShowCifra(true)}
+                    className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}
+                >
+                    <Guitar className="w-4 h-4" /> Cifra
+                </button>
+            </div>
+        )}
+
+        {/* --- CONTEÚDO PRINCIPAL --- */}
+        {showCifra && hasCifra ? (
+            <CifraDisplay content={song!.cifra!} />
+        ) : (
+            <article className="prose prose-zinc max-w-none">
+                <p className="whitespace-pre-line text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium">
+                    {song?.letra}
+                </p>
+            </article>
+        )}
 
         <div className="mt-12 pt-6 border-t border-zinc-100 dark:border-zinc-800">
             <p className="text-sm text-zinc-400 italic">

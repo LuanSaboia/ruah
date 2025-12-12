@@ -7,5 +7,6 @@ export interface Musica {
   numero_cantai?: number
   enviado_por?: string
   link_audio?: string
+  cifra?: string
   created_at?: string
 }

@@ -19,7 +19,7 @@ export function ContributePage() {
     numero: "",
     link_audio: "",
     enviado_por: "",
-    letra: "",
+    conteudo: "", // Campo único
     categorias: [] as string[]
   })
 
@@ -36,9 +36,10 @@ export function ContributePage() {
     setLoading(true)
     setStatus(null)
 
-    if (form.categorias.length === 0) {
-      setForm(prev => ({ ...prev, categorias: ["Geral"] }))
-    }
+    if (form.categorias.length === 0) setForm(prev => ({ ...prev, categorias: ["Geral"] }))
+
+    // Gera letra limpa automaticamente
+    const letraLimpa = form.conteudo.replace(/\[.*?\]/g, "")
 
     try {
       const { error } = await supabase.from('sugestoes').insert([{
@@ -47,14 +48,15 @@ export function ContributePage() {
         numero_cantai: form.numero ? parseInt(form.numero) : null,
         link_audio: form.link_audio,
         enviado_por: form.enviado_por || "Anônimo",
-        letra: form.letra,
+        letra: letraLimpa,
+        cifra: form.conteudo, // Salva o original como cifra
         categoria: form.categorias.length > 0 ? form.categorias : ["Geral"]
       }])
 
       if (error) throw error
 
       setStatus({ type: 'success', msg: "Sugestão enviada! Obrigado por contribuir." })
-      setForm({ titulo: "", artista: "", numero: "", link_audio: "", enviado_por: "", letra: "", categorias: [] })
+      setForm({ titulo: "", artista: "", numero: "", link_audio: "", enviado_por: "", conteudo: "", categorias: [] })
       window.scrollTo(0, 0)
       
     } catch (error: any) {
@@ -79,40 +81,31 @@ export function ContributePage() {
                 
                 <div className="space-y-4">
                     <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider border-b pb-2 mb-4">Dados da Música</h3>
-                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label className="flex items-center gap-2"><Music2 className="w-4 h-4 text-blue-500"/> Título</Label>
                             <Input required placeholder="Ex: Kyrie Eleison" value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} />
                         </div>
-                        
                         <div className="space-y-2">
                             <Label className="flex items-center gap-2"><User className="w-4 h-4 text-purple-500"/> Artista / Banda</Label>
-                            <Input 
-                                required 
-                                placeholder="Ex: Comunidade Shalom, Suely Façanha" 
-                                value={form.artista} 
-                                onChange={e => setForm({...form, artista: e.target.value})} 
-                            />
-                            <p className="text-[11px] text-zinc-400">
-                                Para mais de um artista, separe por vírgula ( <strong>,</strong> ).
-                            </p>
+                            <Input required placeholder="Ex: Shalom, Suely" value={form.artista} onChange={e => setForm({...form, artista: e.target.value})} />
+                            <p className="text-[11px] text-zinc-400">Para múltiplos artistas, separe por vírgula.</p>
                         </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label className="flex items-center gap-2"><Hash className="w-4 h-4 text-zinc-400"/> Nº Cantai (Opcional)</Label>
+                            <Label className="flex items-center gap-2"><Hash className="w-4 h-4 text-zinc-400"/> Nº Cantai</Label>
                             <Input type="number" placeholder="000" value={form.numero} onChange={e => setForm({...form, numero: e.target.value})} />
+                            <p className="text-[11px] text-zinc-400">Opcional</p>
                         </div>
                         <div className="space-y-2">
                             <Label className="flex items-center gap-2"><LinkIcon className="w-4 h-4 text-red-500"/> Link YouTube/Spotify</Label>
                             <Input placeholder="https://..." value={form.link_audio} onChange={e => setForm({...form, link_audio: e.target.value})} />
+                            <p className="text-[11px] text-zinc-400">Opcional</p>
                         </div>
                     </div>
                 </div>
 
-                {/* BLOCO 2: Categorias */}
                 <div className="space-y-3">
                     <Label>Categorias</Label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-100 dark:border-zinc-800 max-h-48 overflow-y-auto">
@@ -125,33 +118,35 @@ export function ContributePage() {
                     </div>
                 </div>
 
-                {/* BLOCO 3: Conteúdo */}
+                {/* CAMPO ÚNICO */}
                 <div className="space-y-2">
-                    <Label>Letra da Música</Label>
+                    <Label htmlFor="conteudo" className="flex items-center gap-2">
+                        Letra e Cifra
+                    </Label>
+                    <p className="text-xs text-zinc-500">
+                        Para adicionar cifras, use colchetes no meio da letra. Ex: <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 rounded">[G]Aleluia</span>. Se não usar colchetes, será salvo apenas como letra.
+                    </p>
                     <Textarea 
                         required 
-                        placeholder="Cole a letra completa aqui..." 
+                        placeholder="[G]Aleluia..." 
                         className="min-h-[250px] font-mono text-sm leading-relaxed p-4" 
-                        value={form.letra} 
-                        onChange={e => setForm({...form, letra: e.target.value})} 
+                        value={form.conteudo} 
+                        onChange={e => setForm({...form, conteudo: e.target.value})} 
                     />
                 </div>
 
-                {/* BLOCO 4: Identificação */}
                 <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                         <div className="space-y-2">
                             <Label>Seu Nome (Opcional)</Label>
                             <Input placeholder="Para os créditos..." value={form.enviado_por} onChange={e => setForm({...form, enviado_por: e.target.value})} />
                         </div>
-                        
                         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white h-10" disabled={loading}>
                             {loading ? "Enviando..." : <><Send className="w-4 h-4 mr-2" /> Enviar Sugestão</>}
                         </Button>
                     </div>
                 </div>
 
-                {/* Feedback */}
                 {status && (
                     <div className={`p-4 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                         {status.type === 'success' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0"/> : <AlertCircle className="w-5 h-5 flex-shrink-0"/>}
