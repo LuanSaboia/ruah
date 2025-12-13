@@ -236,7 +236,7 @@ export function SongPage() {
 
                     <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
                         <Share2 className="w-4 h-4" />
-                    </Button> */}
+                    </Button>
                 </div>
             </div>
             

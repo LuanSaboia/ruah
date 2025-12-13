@@ -8,5 +8,6 @@ export interface Musica {
   enviado_por?: string
   link_audio?: string
   cifra?: string
+  idioma?: string
   created_at?: string
 }
