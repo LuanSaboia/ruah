@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router-dom"
 import { supabase } from "@/lib/supabase"
 import { Navbar } from "@/components/Navbar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CifraDisplay } from "@/components/CifraDisplay"
-import { ArrowLeft, Share2, Heart, Loader2, Download, Check, PlayCircle, Guitar, FileText } from "lucide-react"
+import { ArrowLeft, Share2, Heart, Loader2, Download, Check, PlayCircle, Guitar, FileText, Languages } from "lucide-react"
 import type { Musica } from "@/types"
 import { storage } from "@/lib/storage"
 import {
@@ -15,7 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { AutoScroll } from "@/components/AutoScroll"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Função auxiliar para pegar o ID do vídeo do YouTube
 function getYouTubeId(url: string | null) {
@@ -25,37 +30,73 @@ function getYouTubeId(url: string | null) {
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
+// Mapeamento de bandeiras/nomes por código de idioma
+const LANGUAGE_LABELS: Record<string, string> = {
+  'pt-BR': '🇧🇷 Português',
+  'en': '🇺🇸 English',
+  'es': '🇪🇸 Español',
+  'it': '🇮🇹 Italiano',
+  'fr': '🇫🇷 Français',
+  'la': '🇻🇦 Latim',
+  'he': '🇮🇱 Hebraico',
+  'hu': '🇭🇺 Húngaro',
+  'pl': '🇵🇱 Polonês',
+  'de': '🇩🇪 Alemão'
+}
+
 export function SongPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [song, setSong] = useState<Musica | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
   
   // Estado das Abas (Letra vs Cifra)
   const [showCifra, setShowCifra] = useState(false)
-  // Estado do Modal de Vídeo
   const [isVideoOpen, setIsVideoOpen] = useState(false)
 
+  // Estado das Versões (Outros Idiomas)
+  const [versions, setVersions] = useState<{id: number, idioma: string, titulo: string}[]>([])
+
   useEffect(() => {
-    async function fetchSong() {
+    async function fetchSongAndVersions() {
       if (!id) return;
       setLoading(true)
 
-      // 1. Tenta buscar no Banco de Dados (Online)
-      const { data, error } = await supabase
+      // 1. Busca a música atual
+      const { data: currentSong, error } = await supabase
         .from('musicas')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (!error && data) {
-        setSong(data)
-        // DETECÇÃO AUTOMÁTICA: Se tiver '[', já abre na aba Cifra
-        if (data.cifra && data.cifra.includes('[')) {
+      if (!error && currentSong) {
+        setSong(currentSong)
+        
+        // Detecção automática de cifra
+        if (currentSong.cifra && currentSong.cifra.includes('[')) {
             setShowCifra(true)
         }
+
+        // 2. BUSCA INTELIGENTE DE VERSÕES
+        // Cenário A: Esta música é filha (tem versao_de) -> Busca o Pai e os Irmãos
+        // Cenário B: Esta música é pai (versao_de é null) -> Busca os Filhos
+        
+        const parentId = currentSong.versao_de || currentSong.id
+        
+        const { data: relatedSongs } = await supabase
+            .from('musicas')
+            .select('id, idioma, titulo, versao_de')
+            .or(`id.eq.${parentId},versao_de.eq.${parentId}`) // Busca o Pai OU quem tem o Pai como referência
+            .neq('id', currentSong.id) // Não traz a música atual de novo
+            .order('idioma')
+
+        if (relatedSongs) {
+            setVersions(relatedSongs)
+        }
+
       } else {
-        // 2. Fallback Offline
+        // Fallback Offline
         console.log("Tentando offline...")
         const savedSongs = storage.getSavedSongs()
         const localSong = savedSongs.find(s => s.id === Number(id))
@@ -66,7 +107,8 @@ export function SongPage() {
       }
       setLoading(false)
     }
-    fetchSong()
+
+    fetchSongAndVersions()
   }, [id])
 
   useEffect(() => {
@@ -85,8 +127,6 @@ export function SongPage() {
   }
 
   const youtubeId = song ? getYouTubeId(song.link_audio || "") : null
-
-  // Variável inteligente: Só considera que "tem cifra" se houver colchetes no texto
   const hasCifra = song?.cifra && song.cifra.includes('[')
 
   if (loading) {
@@ -126,7 +166,40 @@ export function SongPage() {
                     <p className="text-xl text-blue-600 dark:text-blue-400 font-medium">{song.artista}</p>
                 </div>
                 
-                <div className="flex gap-2 self-start md:self-auto">
+                <div className="flex gap-2 self-start md:self-auto flex-wrap">
+                    
+                    {/* BOTÃO DE IDIOMAS (Só aparece se tiver versões) */}
+                    {versions.length > 0 && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/20">
+                                    <Languages className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Idioma</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {/* Opção Atual (Desabilitada visualmente ou marcada) */}
+                                <DropdownMenuItem disabled className="opacity-100 font-bold bg-zinc-100 dark:bg-zinc-800">
+                                    {LANGUAGE_LABELS[song.idioma || 'pt-BR'] || song.idioma} (Atual)
+                                </DropdownMenuItem>
+                                
+                                {/* Outras Opções */}
+                                {versions.map(v => (
+                                    <DropdownMenuItem 
+                                        key={v.id} 
+                                        onClick={() => navigate(`/musica/${v.id}`)}
+                                        className="cursor-pointer gap-2"
+                                    >
+                                        <span>{LANGUAGE_LABELS[v.idioma || 'pt-BR'] || v.idioma}</span>
+                                        <span className="text-xs text-zinc-400 ml-auto">
+                                            {v.titulo !== song.titulo ? `(${v.titulo})` : ''}
+                                        </span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+
                     {/* Botão OUVIR */}
                     {youtubeId && (
                         <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
@@ -162,9 +235,6 @@ export function SongPage() {
                     </Button>
 
                     <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
-                        <Heart className="w-4 h-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
                         <Share2 className="w-4 h-4" />
                     </Button>
                 </div>
@@ -181,11 +251,14 @@ export function SongPage() {
                     Cantai nº {song.numero_cantai}
                   </Badge>
                 )}
+                {/* Badge de Idioma (Visual rápido) */}
+                <Badge variant="secondary" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                    {LANGUAGE_LABELS[song.idioma || 'pt-BR'] || song.idioma}
+                </Badge>
             </div>
         </div>
 
         {/* --- BARRA DE ABAS --- */}
-        {/* Só mostra a barra se tiver cifra real (com colchetes). Se não, mostra só letra direto */}
         {hasCifra && (
             <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 dark:border-zinc-800">
                 <button 
@@ -219,7 +292,7 @@ export function SongPage() {
                 Enviado por: <span className="text-zinc-600 dark:text-zinc-300 font-medium">{song.enviado_por || "Colaborador Ruah"}</span>
             </p>
         </div>
-        <AutoScroll />
+
       </main>
     </div>
   )
