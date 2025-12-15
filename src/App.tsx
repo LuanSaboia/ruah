@@ -61,7 +61,7 @@ function AppRoutes() {
       <Route path="/salvas" element={<SavedSongsPage />} />
 
       <Route path="/artistas" element={<ArtistsPage />} />
-      <Route path="/artista/:nome" element={<ArtistDetailsPage />} />
+      <Route path="/artistas/:nome" element={<ArtistDetailsPage />} />
       <Route path="/categorias" element={<CategoriesPage />} />
       
       <Route path="/contribuir" element={<ContributePage />} />

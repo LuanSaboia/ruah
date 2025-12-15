@@ -22,7 +22,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Função auxiliar para pegar o ID do vídeo do YouTube
 function getYouTubeId(url: string | null) {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -30,7 +29,6 @@ function getYouTubeId(url: string | null) {
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
-// Mapeamento de bandeiras/nomes por código de idioma
 const LANGUAGE_LABELS: Record<string, string> = {
   'pt-BR': '🇧🇷 Português',
   'en': '🇺🇸 English',
@@ -50,12 +48,8 @@ export function SongPage() {
   const [song, setSong] = useState<Musica | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
-  
-  // Estado das Abas (Letra vs Cifra)
   const [showCifra, setShowCifra] = useState(false)
   const [isVideoOpen, setIsVideoOpen] = useState(false)
-
-  // Estado das Versões (Outros Idiomas)
   const [versions, setVersions] = useState<{id: number, idioma: string, titulo: string}[]>([])
 
   useEffect(() => {
@@ -63,7 +57,6 @@ export function SongPage() {
       if (!id) return;
       setLoading(true)
 
-      // 1. Busca a música atual
       const { data: currentSong, error } = await supabase
         .from('musicas')
         .select('*')
@@ -72,28 +65,21 @@ export function SongPage() {
 
       if (!error && currentSong) {
         setSong(currentSong)
-        
-        // Detecção automática de cifra
         if (currentSong.cifra && currentSong.cifra.includes('[')) {
             setShowCifra(true)
         }
-        
+
         const parentId = currentSong.versao_de || currentSong.id
-        
         const { data: relatedSongs } = await supabase
             .from('musicas')
             .select('id, idioma, titulo, versao_de')
-            .or(`id.eq.${parentId},versao_de.eq.${parentId}`) // Busca o Pai OU quem tem o Pai como referência
-            .neq('id', currentSong.id) // Não traz a música atual de novo
+            .or(`id.eq.${parentId},versao_de.eq.${parentId}`)
+            .neq('id', currentSong.id)
             .order('idioma')
 
-        if (relatedSongs) {
-            setVersions(relatedSongs)
-        }
+        if (relatedSongs) setVersions(relatedSongs)
 
       } else {
-        // Fallback Offline
-        console.log("Tentando offline...")
         const savedSongs = storage.getSavedSongs()
         const localSong = savedSongs.find(s => s.id === Number(id))
         if (localSong) {
@@ -120,6 +106,12 @@ export function SongPage() {
       storage.saveSong(song)
       setIsSaved(true)
     }
+  }
+
+  const handleCategoryClick = (category: string) => {
+    // Navega para a página de Categorias
+    // state envia a categoria
+    navigate('/categorias', { state: { autoSelect: category } })
   }
 
   const youtubeId = song ? getYouTubeId(song.link_audio || "") : null
@@ -159,12 +151,30 @@ export function SongPage() {
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-bold mb-2 text-zinc-900 dark:text-white">{song.titulo}</h1>
-                    <p className="text-xl text-blue-600 dark:text-blue-400 font-medium">{song.artista}</p>
+                    
+                    {/* ÁREA DO ARTISTA CLICÁVEL */}
+                    <p className="text-xl text-blue-600 dark:text-blue-400 font-medium flex flex-wrap gap-1">
+                      {/* Lógica: Divide por vírgula e cria links individuais */}
+                      {song.artista.split(',').map((art, index, arr) => {
+                        const artistName = art.trim();
+                        return (
+                          <span key={index}>
+                            <Link 
+                              to={`/artistas/${encodeURIComponent(artistName)}`}
+                              className="hover:underline hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                            >
+                              {artistName}
+                            </Link>
+                            {/* Adiciona vírgula se não for o último */}
+                            {index < arr.length - 1 && <span className="text-zinc-400 mr-1">,</span>}
+                          </span>
+                        )
+                      })}
+                    </p>
                 </div>
                 
                 <div className="flex gap-2 self-start md:self-auto flex-wrap">
                     
-                    {/* BOTÃO DE IDIOMAS (Só aparece se tiver versões) */}
                     {versions.length > 0 && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -174,29 +184,19 @@ export function SongPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                {/* Opção Atual (Desabilitada visualmente ou marcada) */}
                                 <DropdownMenuItem disabled className="opacity-100 font-bold bg-zinc-100 dark:bg-zinc-800">
                                     {LANGUAGE_LABELS[song.idioma || 'pt-BR'] || song.idioma} (Atual)
                                 </DropdownMenuItem>
-                                
-                                {/* Outras Opções */}
                                 {versions.map(v => (
-                                    <DropdownMenuItem 
-                                        key={v.id} 
-                                        onClick={() => navigate(`/musica/${v.id}`)}
-                                        className="cursor-pointer gap-2"
-                                    >
+                                    <DropdownMenuItem key={v.id} onClick={() => navigate(`/musica/${v.id}`)} className="cursor-pointer gap-2">
                                         <span>{LANGUAGE_LABELS[v.idioma || 'pt-BR'] || v.idioma}</span>
-                                        <span className="text-xs text-zinc-400 ml-auto">
-                                            {v.titulo !== song.titulo ? `(${v.titulo})` : ''}
-                                        </span>
+                                        <span className="text-xs text-zinc-400 ml-auto">{v.titulo !== song.titulo ? `(${v.titulo})` : ''}</span>
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}
 
-                    {/* Botão OUVIR */}
                     {youtubeId && (
                         <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
                           <DialogTrigger asChild>
@@ -210,44 +210,36 @@ export function SongPage() {
                               <DialogTitle className="text-white text-sm font-medium drop-shadow-md">{song.titulo}</DialogTitle>
                             </DialogHeader>
                             <div className="aspect-video w-full">
-                              <iframe 
-                                width="100%" height="100%" 
-                                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`} 
-                                title="YouTube video player" frameBorder="0" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                allowFullScreen
-                              ></iframe>
+                              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
                             </div>
                           </DialogContent>
                         </Dialog>
                     )}
 
-                    {/* Botão DOWNLOAD */}
-                    <Button 
-                      variant="outline" size="icon" onClick={toggleSave}
-                      className={isSaved ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400" : "dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"}
-                    >
+                    <Button variant="outline" size="icon" onClick={toggleSave} className={isSaved ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400" : "dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"}>
                         {isSaved ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
                     </Button>
-
-                    <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
-                        <Share2 className="w-4 h-4" />
-                    </Button>
+                    <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"><Share2 className="w-4 h-4" /></Button>
                 </div>
             </div>
             
             <div className="mt-4 flex flex-wrap gap-2">
+                {/* CATEGORIAS CLICÁVEIS */}
                 {(Array.isArray(song.categoria) ? song.categoria : [song.categoria]).filter(Boolean).map((cat: string) => (
-                   <Badge key={cat} className="bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300">
+                   <Badge 
+                      key={cat} 
+                      onClick={() => handleCategoryClick(cat)}
+                      className="bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 cursor-pointer transition-colors active:scale-95 select-none"
+                   >
                       {cat}
                    </Badge>
                 ))}
+                
                 {song.numero_cantai && (
                   <Badge variant="outline" className="text-zinc-500 border-zinc-300 dark:text-zinc-400 dark:border-zinc-700">
                     Cantai nº {song.numero_cantai}
                   </Badge>
                 )}
-                {/* Badge de Idioma (Visual rápido) */}
                 <Badge variant="secondary" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
                     {LANGUAGE_LABELS[song.idioma || 'pt-BR'] || song.idioma}
                 </Badge>
@@ -257,16 +249,10 @@ export function SongPage() {
         {/* --- BARRA DE ABAS --- */}
         {hasCifra && (
             <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 dark:border-zinc-800">
-                <button 
-                    onClick={() => setShowCifra(false)}
-                    className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${!showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}
-                >
+                <button onClick={() => setShowCifra(false)} className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${!showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}>
                     <FileText className="w-4 h-4" /> Letra
                 </button>
-                <button 
-                    onClick={() => setShowCifra(true)}
-                    className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}
-                >
+                <button onClick={() => setShowCifra(true)} className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}>
                     <Guitar className="w-4 h-4" /> Cifra
                 </button>
             </div>
@@ -283,19 +269,16 @@ export function SongPage() {
             </article>
         )}
 
-        <div className="mt-12 pt-6 border-t border-zinc-100 dark:border-zinc-800">
-            <p className="text-sm text-zinc-400 italic">
-                Enviado por: <span className="text-zinc-600 dark:text-zinc-300 font-medium">{song.enviado_por || "Colaborador Ruah"}</span>
-            </p>
-
-            <button 
-            onClick={() => navigate('/contribuir', { state: { songToEdit: song } })}
-            className="flex items-center gap-2 hover:text-orange-600 transition-colors"
-          >
+        {/* RODAPÉ */}
+        <div className="mt-12 pt-8 border-t border-zinc-100 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
+          <p className="italic">
+              Enviado por: <span className="font-medium text-zinc-700 dark:text-zinc-300">{song.enviado_por || "Colaborador Ruah"}</span>
+          </p>
+          <button onClick={() => navigate('/contribuir', { state: { songToEdit: song } })} className="flex items-center gap-2 hover:text-orange-600 transition-colors">
             <AlertTriangle className="w-4 h-4" />
             Encontrou algum erro? Sugerir correção
           </button>
-        </div>
+       </div>
 
       </main>
     </div>
