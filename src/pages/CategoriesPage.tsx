@@ -4,11 +4,14 @@ import { supabase } from "@/lib/supabase"
 import type { Musica } from "@/types"
 import { SongListItem } from "@/components/SongListItem"
 import { Button } from "@/components/ui/button"
-import { Loader2, Tag } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { Loader2, Tag, X, Filter } from "lucide-react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { Badge } from "@/components/ui/badge"
 
 export function CategoriesPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+
   const [songs, setSongs] = useState<Musica[]>([])
   const [allCategories, setAllCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,96 +30,128 @@ export function CategoriesPage() {
       } else if (data) {
         setSongs(data)
         
-        // Extrair todas as categorias únicas existentes nas músicas
         const catsSet = new Set<string>()
         data.forEach(song => {
           const cats = Array.isArray(song.categoria) ? song.categoria : [song.categoria]
           cats.filter(Boolean).forEach((c: string) => catsSet.add(c))
         })
-        // Ordenar alfabeticamente
         setAllCategories(Array.from(catsSet).sort())
       }
-      
       setLoading(false)
     }
     fetchData()
   }, [])
 
-  // Define quais grupos vamos exibir (Todos ou apenas o selecionado)
-  const groupsToDisplay = selectedCategory ? [selectedCategory] : allCategories
+  // Detecção Automática (Vindo da música)
+  useEffect(() => {
+    if (location.state && location.state.autoSelect) {
+        setSelectedCategory(location.state.autoSelect)
+        window.history.replaceState({}, '') 
+    }
+  }, [location])
+
+  // Lógica de Filtragem: Se tem categoria selecionada, mostra só ela. Se não, mostra todas.
+  const groupsToDisplay = selectedCategory 
+    ? allCategories.filter(c => c === selectedCategory)
+    : allCategories
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 font-sans pb-20 transition-colors">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pb-20 transition-colors">
       <Navbar />
       
-      <main className="container mx-auto max-w-3xl px-0 md:px-4 py-8">
+      <main className="container mx-auto px-4 py-8 max-w-3xl">
         
-        <div className="px-4 md:px-0 mb-6">
-            <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-3">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
               <Tag className="w-8 h-8 text-blue-600" />
               Categorias
-            </h2>
-            <p className="text-zinc-500 dark:text-zinc-400">
-              Navegue pelos temas do repertório.
+            </h1>
+            <p className="text-zinc-500 mt-1">
+              {selectedCategory 
+                ? `Exibindo: ${selectedCategory}` 
+                : "Navegue por temas."}
             </p>
+          </div>
+
+          {selectedCategory && (
+            <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setSelectedCategory(null)}
+                className="text-red-500 hover:text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900/30"
+            >
+                <X className="w-4 h-4 mr-2"/> Limpar Filtro
+            </Button>
+          )}
         </div>
 
-        {/* Barra de Filtro Horizontal (Scrollável) */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-4 -mx-4 px-4 md:mx-0 md:px-0 no-scrollbar touch-pan-x sticky top-16 bg-white/95 dark:bg-zinc-950/95 backdrop-blur z-40 py-2">
-          <Button
-            variant={selectedCategory === null ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedCategory(null)}
-            className="rounded-full flex-shrink-0"
-          >
-            Todas
-          </Button>
-          {allCategories.map(cat => (
-            <Button
-              key={cat}
-              variant={selectedCategory === cat ? "default" : "secondary"}
-              size="sm"
-              onClick={() => setSelectedCategory(cat)}
-              className="rounded-full flex-shrink-0"
-            >
-              {cat}
-            </Button>
-          ))}
-        </div>
+        {/* --- BARRA DE ROLAGEM HORIZONTAL (ESTILO ARTISTAS A-Z) --- */}
+        {!loading && (
+            <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                {/* Botão "Todas" */}
+                <Badge
+                    variant={selectedCategory === null ? "default" : "outline"}
+                    className={`cursor-pointer px-4 py-2 text-sm whitespace-nowrap ${selectedCategory === null ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                    onClick={() => setSelectedCategory(null)}
+                >
+                    Todas
+                </Badge>
+
+                {/* Lista de Categorias */}
+                {allCategories.map(cat => (
+                    <Badge
+                        key={cat}
+                        variant={selectedCategory === cat ? "default" : "outline"}
+                        className={`cursor-pointer px-4 py-2 text-sm whitespace-nowrap transition-all ${
+                            selectedCategory === cat 
+                                ? 'bg-blue-600 hover:bg-blue-700 shadow-md scale-105' 
+                                : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                        }`}
+                        onClick={() => setSelectedCategory(cat === selectedCategory ? null : cat)}
+                    >
+                        {cat}
+                    </Badge>
+                ))}
+            </div>
+        )}
 
         {loading ? (
-          <div className="flex justify-center py-12"><Loader2 className="animate-spin text-blue-600" /></div>
+          <div className="flex justify-center p-12">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
             {groupsToDisplay.map((category) => {
-              
-              // AQUI ESTÁ A MÁGICA:
-              // Filtramos as músicas que possuem ESSA categoria na lista delas.
-              const songsInThisCategory = songs.filter(song => {
-                const cats = Array.isArray(song.categoria) ? song.categoria : [song.categoria]
+              // Filtra as músicas dessa categoria
+              const songsInThisCategory = songs.filter(s => {
+                const cats = Array.isArray(s.categoria) ? s.categoria : [s.categoria]
                 return cats.includes(category)
               })
 
               if (songsInThisCategory.length === 0) return null
 
               return (
-                <div key={category} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  {/* Cabeçalho da Categoria (Estilo Letras.mus.br # A B C) */}
-                  <div className="flex items-center gap-4 mb-3 px-4 md:px-0">
-                    <h3 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <div key={category} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+                  {/* Cabeçalho da Seção (Clicável para focar nela) */}
+                  <div 
+                    className="bg-zinc-50 dark:bg-zinc-900/50 p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-3 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
+                  >
+                    <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">
                       {category}
                     </h3>
                     <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800"></div>
-                    <span className="text-xs font-medium text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full">
+                    <span className="text-xs font-medium text-zinc-400 bg-zinc-200 dark:bg-zinc-800 px-2 py-1 rounded-full">
                       {songsInThisCategory.length}
                     </span>
                   </div>
 
-                  {/* Lista de Músicas desta Categoria */}
-                  <div className="border-t border-zinc-100 dark:border-zinc-800">
+                  {/* Lista de Músicas (Jeito Anterior) */}
+                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800 border-t border-zinc-100 dark:border-zinc-800">
                     {songsInThisCategory.map((song) => (
                       <SongListItem
-                        key={`${category}-${song.id}`} // Chave única combinada para o React não reclamar se repetir
+                        key={`${category}-${song.id}`} 
                         title={song.titulo}
                         artist={song.artista}
                         category={song.categoria}
