@@ -36,7 +36,7 @@ export function ContributePage() {
         artista: editingSong.artista,
         numero: editingSong.numero_cantai ? String(editingSong.numero_cantai) : "",
         link_audio: editingSong.link_audio || "",
-        enviado_por: "",
+        enviado_por: "", // <--- IMPORTANTE: Limpa para o revisor por o nome dele
         conteudo: editingSong.cifra || editingSong.letra,
         categorias: editingSong.categoria || [],
         musica_id: editingSong.id
@@ -67,18 +67,18 @@ export function ContributePage() {
         artista: form.artista,
         numero_cantai: form.numero ? parseInt(form.numero) : null,
         link_audio: form.link_audio,
-        enviado_por: form.enviado_por || "Anônimo", 
+        enviado_por: form.enviado_por || "Anônimo", // Se não por nome, vai como Anônimo
         letra: letraLimpa,
         cifra: form.conteudo,
         categoria: form.categorias.length > 0 ? form.categorias : ["Geral"],
-        musica_id: form.musica_id 
+        musica_id: form.musica_id // Envia o ID da original (se for edição)
       }])
 
       if (error) throw error
 
       setStatus({ type: 'success', msg: form.musica_id ? "Correção enviada para análise!" : "Sugestão enviada! Obrigado." })
       
-      // Limpa o form se for sucesso e se não for edição (se for edição mantem pra pessoa ver)
+      // Limpa o form se for sucesso e não for edição
       if (!form.musica_id) {
           setForm({ titulo: "", artista: "", numero: "", link_audio: "", enviado_por: "", conteudo: "", categorias: [], musica_id: null })
       }

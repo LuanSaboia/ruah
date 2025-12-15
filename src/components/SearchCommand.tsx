@@ -22,7 +22,6 @@ export function SearchCommand() {
   const [foundSongs, setFoundSongs] = useState<Musica[]>([])
   const [foundArtists, setFoundArtists] = useState<string[]>([])
 
-  // Atalho de teclado (Ctrl + K)
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -34,7 +33,6 @@ export function SearchCommand() {
     return () => document.removeEventListener("keydown", down)
   }, [])
 
-  // Efeito de Busca
   useEffect(() => {
     if (query.length < 2) {
       setFoundSongs([])
@@ -45,7 +43,6 @@ export function SearchCommand() {
     const timer = setTimeout(async () => {
       setLoading(true)
       
-      // Busca no banco (Músicas cujos títulos OU artistas batem com a pesquisa)
       const { data } = await supabase
         .from('musicas')
         .select('*')
@@ -55,6 +52,7 @@ export function SearchCommand() {
       if (data) {
         setFoundSongs(data)
 
+        // --- SPLIT DE ARTISTAS ---
         const allArtistsOnResult = data.flatMap(m => 
             m.artista ? m.artista.split(',').map((a: string) => a.trim()) : []
         )
@@ -115,16 +113,15 @@ export function SearchCommand() {
 
           {!loading && (
             <>
-                {/* GRUPO 2: MÚSICAS */}
                 {foundSongs.length > 0 && (
-                    <CommandGroup heading="Músicas">
+                  <CommandGroup heading="Músicas">
                     {foundSongs.map((music) => (
-                        <CommandItem 
-                        key={music.id} 
-                        value={"song-" + music.titulo} // Value único para evitar bugs de seleção
-                        onSelect={() => handleSelectSong(music.id)}
-                        className="cursor-pointer"
-                        >
+                      <CommandItem 
+                      key={music.id} 
+                      value={"song-" + music.titulo} 
+                      onSelect={() => handleSelectSong(music.id)}
+                      className="cursor-pointer"
+                      >
                         <Music className="mr-2 h-4 w-4 text-zinc-500" />
                         <div className="flex flex-col">
                             <span>{music.titulo}</span>
@@ -136,10 +133,9 @@ export function SearchCommand() {
                     ))}
                     </CommandGroup>
                 )}
-
+                
                 {foundArtists.length > 0 && foundSongs.length > 0 && <CommandSeparator />}
-              
-                {/* GRUPO 1: ARTISTAS (Mostramos primeiro se houver match direto) */}
+
                 {foundArtists.length > 0 && (
                     <CommandGroup heading="Artistas">
                     {foundArtists.map((artist) => (

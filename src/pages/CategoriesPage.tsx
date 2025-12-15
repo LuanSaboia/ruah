@@ -50,7 +50,6 @@ export function CategoriesPage() {
     }
   }, [location])
 
-  // Lógica de Filtragem: Se tem categoria selecionada, mostra só ela. Se não, mostra todas.
   const groupsToDisplay = selectedCategory 
     ? allCategories.filter(c => c === selectedCategory)
     : allCategories
@@ -86,10 +85,9 @@ export function CategoriesPage() {
           )}
         </div>
 
-        {/* --- BARRA DE ROLAGEM HORIZONTAL (ESTILO ARTISTAS A-Z) --- */}
+        {/* --- BARRA DE ROLAGEM HORIZONTAL --- */}
         {!loading && (
             <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                {/* Botão "Todas" */}
                 <Badge
                     variant={selectedCategory === null ? "default" : "outline"}
                     className={`cursor-pointer px-4 py-2 text-sm whitespace-nowrap ${selectedCategory === null ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
@@ -98,7 +96,6 @@ export function CategoriesPage() {
                     Todas
                 </Badge>
 
-                {/* Lista de Categorias */}
                 {allCategories.map(cat => (
                     <Badge
                         key={cat}
@@ -123,7 +120,6 @@ export function CategoriesPage() {
         ) : (
           <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
             {groupsToDisplay.map((category) => {
-              // Filtra as músicas dessa categoria
               const songsInThisCategory = songs.filter(s => {
                 const cats = Array.isArray(s.categoria) ? s.categoria : [s.categoria]
                 return cats.includes(category)
@@ -133,7 +129,6 @@ export function CategoriesPage() {
 
               return (
                 <div key={category} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
-                  {/* Cabeçalho da Seção (Clicável para focar nela) */}
                   <div 
                     className="bg-zinc-50 dark:bg-zinc-900/50 p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-3 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
@@ -147,7 +142,6 @@ export function CategoriesPage() {
                     </span>
                   </div>
 
-                  {/* Lista de Músicas (Jeito Anterior) */}
                   <div className="divide-y divide-zinc-100 dark:divide-zinc-800 border-t border-zinc-100 dark:border-zinc-800">
                     {songsInThisCategory.map((song) => (
                       <SongListItem

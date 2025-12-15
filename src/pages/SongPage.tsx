@@ -108,9 +108,8 @@ export function SongPage() {
     }
   }
 
+  // --- NAVEGAÇÃO INTELIGENTE PARA CATEGORIAS ---
   const handleCategoryClick = (category: string) => {
-    // Navega para a página de Categorias
-    // state envia a categoria
     navigate('/categorias', { state: { autoSelect: category } })
   }
 
@@ -152,9 +151,8 @@ export function SongPage() {
                 <div>
                     <h1 className="text-3xl md:text-4xl font-bold mb-2 text-zinc-900 dark:text-white">{song.titulo}</h1>
                     
-                    {/* ÁREA DO ARTISTA CLICÁVEL */}
+                    {/* --- ARTISTAS SEPARADOS E CLICÁVEIS --- */}
                     <p className="text-xl text-blue-600 dark:text-blue-400 font-medium flex flex-wrap gap-1">
-                      {/* Lógica: Divide por vírgula e cria links individuais */}
                       {song.artista.split(',').map((art, index, arr) => {
                         const artistName = art.trim();
                         return (
@@ -165,7 +163,6 @@ export function SongPage() {
                             >
                               {artistName}
                             </Link>
-                            {/* Adiciona vírgula se não for o último */}
                             {index < arr.length - 1 && <span className="text-zinc-400 mr-1">,</span>}
                           </span>
                         )
@@ -224,12 +221,12 @@ export function SongPage() {
             </div>
             
             <div className="mt-4 flex flex-wrap gap-2">
-                {/* CATEGORIAS CLICÁVEIS */}
+                {/* --- CATEGORIAS CLICÁVEIS --- */}
                 {(Array.isArray(song.categoria) ? song.categoria : [song.categoria]).filter(Boolean).map((cat: string) => (
                    <Badge 
                       key={cat} 
                       onClick={() => handleCategoryClick(cat)}
-                      className="bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 cursor-pointer transition-colors active:scale-95 select-none"
+                      className="bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 cursor-pointer transition-colors active:scale-95 select-none hover:text-blue-600 dark:hover:text-blue-400"
                    >
                       {cat}
                    </Badge>
@@ -246,7 +243,6 @@ export function SongPage() {
             </div>
         </div>
 
-        {/* --- BARRA DE ABAS --- */}
         {hasCifra && (
             <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 dark:border-zinc-800">
                 <button onClick={() => setShowCifra(false)} className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${!showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}>
@@ -258,7 +254,6 @@ export function SongPage() {
             </div>
         )}
 
-        {/* --- CONTEÚDO PRINCIPAL --- */}
         {showCifra && hasCifra ? (
             <CifraDisplay content={song!.cifra!} />
         ) : (
@@ -269,7 +264,6 @@ export function SongPage() {
             </article>
         )}
 
-        {/* RODAPÉ */}
         <div className="mt-12 pt-8 border-t border-zinc-100 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
           <p className="italic">
               Enviado por: <span className="font-medium text-zinc-700 dark:text-zinc-300">{song.enviado_por || "Colaborador Ruah"}</span>
