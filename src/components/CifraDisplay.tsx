@@ -4,9 +4,8 @@ import { Minus, Plus, RefreshCw } from "lucide-react"
 import { parseCifraLine } from "@/lib/chords"
 import { getChordData } from "@/lib/chord-db"
 import { ChordDiagram } from "./ChordDiagram"
-import { useIsTouch } from "@/lib/use-is-touch" // <--- Importamos o detector
+import { useIsTouch } from "@/lib/use-is-touch"
 
-// Importamos AMBOS os componentes
 import {
   HoverCard,
   HoverCardContent,
@@ -33,8 +32,6 @@ export function CifraDisplay({ content }: CifraDisplayProps) {
   const firstChord = parseCifraLine(content, 0).find(s => s.chord)?.chord || "?";
   const currentKey = parseCifraLine(`[${firstChord}]`, semitones)[0].chord;
 
-  // Função auxiliar para renderizar o CONTEÚDO do balão (o desenho)
-  // Assim não repetimos código
   const renderChordContent = (chordName: string) => {
     const data = getChordData(chordName);
     return data ? (
@@ -47,7 +44,7 @@ export function CifraDisplay({ content }: CifraDisplayProps) {
   return (
     <div className="space-y-4 select-none">
       
-      {/* Barra de Controle (Igual) */}
+      {/* Barra de Controle */}
       <div className="flex flex-wrap items-center gap-2 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 sticky top-16 z-10 shadow-sm">
         <div className="flex items-center gap-1 border-r border-zinc-300 dark:border-zinc-700 pr-3 mr-1">
             <div className="flex flex-col mr-2">
@@ -76,15 +73,17 @@ export function CifraDisplay({ content }: CifraDisplayProps) {
              {parseCifraLine(line, semitones).map((seg, j) => (
                 <div key={j} className="flex flex-col pr-0.5 group relative">
                    
-                   {/* LÓGICA HÍBRIDA AQUI */}
                    {seg.chord ? (
                      isTouch ? (
                         // MODO CELULAR (Clique / Popover)
                         <Popover>
                             <PopoverTrigger asChild>
-                                <span className="text-blue-600 dark:text-blue-400 font-bold mb-1 leading-none cursor-pointer active:scale-95 transition-transform origin-bottom-left select-none touch-manipulation">
+                                <button 
+                                    type="button"
+                                    className="text-blue-600 dark:text-blue-400 font-bold mb-1 leading-none cursor-pointer active:scale-95 transition-transform origin-bottom-left select-none touch-manipulation bg-transparent border-none p-0 m-0 text-left"
+                                >
                                     {seg.chord}
-                                </span>
+                                </button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-xl z-50" side="top" sideOffset={5}>
                                 {renderChordContent(seg.chord)}
@@ -94,9 +93,12 @@ export function CifraDisplay({ content }: CifraDisplayProps) {
                         // MODO PC (Hover / HoverCard)
                         <HoverCard openDelay={0} closeDelay={0}>
                             <HoverCardTrigger asChild>
-                                <span className="text-blue-600 dark:text-blue-400 font-bold mb-1 leading-none cursor-pointer hover:scale-110 transition-transform origin-bottom-left select-none">
+                                <button 
+                                    type="button"
+                                    className="text-blue-600 dark:text-blue-400 font-bold mb-1 leading-none cursor-pointer hover:scale-110 transition-transform origin-bottom-left select-none bg-transparent border-none p-0 m-0 text-left"
+                                >
                                     {seg.chord}
-                                </span>
+                                </button>
                             </HoverCardTrigger>
                             <HoverCardContent className="w-auto p-0 border-none bg-transparent shadow-xl z-50" side="top" sideOffset={5}>
                                 {renderChordContent(seg.chord)}
