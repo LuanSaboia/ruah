@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase"
 import type { Musica } from "@/types"
 import { SongListItem } from "@/components/SongListItem"
 import { Button } from "@/components/ui/button"
-import { Loader2, Tag, X, Filter } from "lucide-react"
+import { Loader2, Tag, X } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 
