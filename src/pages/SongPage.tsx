@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CifraDisplay } from "@/components/CifraDisplay"
-import { ArrowLeft, Share2, Loader2, Download, Check, PlayCircle, Guitar, FileText, Languages } from "lucide-react"
+import { ArrowLeft, Share2, Loader2, Download, Check, PlayCircle, Guitar, FileText, Languages, AlertTriangle } from "lucide-react"
 import type { Musica } from "@/types"
 import { storage } from "@/lib/storage"
 import {
@@ -77,10 +77,6 @@ export function SongPage() {
         if (currentSong.cifra && currentSong.cifra.includes('[')) {
             setShowCifra(true)
         }
-
-        // 2. BUSCA INTELIGENTE DE VERSÕES
-        // Cenário A: Esta música é filha (tem versao_de) -> Busca o Pai e os Irmãos
-        // Cenário B: Esta música é pai (versao_de é null) -> Busca os Filhos
         
         const parentId = currentSong.versao_de || currentSong.id
         
@@ -291,6 +287,14 @@ export function SongPage() {
             <p className="text-sm text-zinc-400 italic">
                 Enviado por: <span className="text-zinc-600 dark:text-zinc-300 font-medium">{song.enviado_por || "Colaborador Ruah"}</span>
             </p>
+
+            <button 
+            onClick={() => navigate('/contribuir', { state: { songToEdit: song } })}
+            className="flex items-center gap-2 hover:text-orange-600 transition-colors"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            Encontrou algum erro? Sugerir correção
+          </button>
         </div>
 
       </main>
