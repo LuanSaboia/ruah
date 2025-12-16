@@ -3,11 +3,13 @@ import { Navbar } from "@/components/Navbar"
 import { Button } from "@/components/ui/button"
 import { Mic, MicOff } from "lucide-react"
 import { autoCorrelate, getNote, getNoteString, getCents } from "@/lib/tuner"
+import { useToast } from "@/lib/useToast"
 
 export function TunerPage() {
   const [isListening, setIsListening] = useState(false)
   const [note, setNote] = useState<string>("--")
   const [cents, setCents] = useState<number>(0)
+  const { addToast } = useToast()
   
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
@@ -33,7 +35,7 @@ export function TunerPage() {
       updatePitch()
     } catch (err) {
       console.error("Erro ao acessar microfone", err)
-      alert("Precisamos do seu microfone para afinar!")
+      addToast("Erro: Precisamos da permissão do microfone.", "error")
     }
   }
 

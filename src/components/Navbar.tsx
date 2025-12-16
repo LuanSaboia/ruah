@@ -177,12 +177,12 @@ export function Navbar() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             ) : (
-                <Link to="/login">
-                    <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-full px-4">
+                // <Link to="/login">
+                    <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-full px-4" disabled>
                         <LogIn className="w-4 h-4" />
                         <span className="hidden sm:inline">Entrar</span>
                     </Button>
-                </Link>
+                // </Link>
             )}
         </div>
 

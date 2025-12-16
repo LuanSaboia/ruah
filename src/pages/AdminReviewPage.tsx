@@ -15,6 +15,7 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog"
+import { useToast } from "@/lib/useToast"
 
 interface Sugestao {
     id: number;
@@ -31,6 +32,7 @@ interface Sugestao {
 }
 
 export function AdminReviewPage() {
+  const { addToast } = useToast()
   const [suggestions, setSuggestions] = useState<Sugestao[]>([])
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState<number | null>(null)
@@ -98,11 +100,12 @@ export function AdminReviewPage() {
         if (error) throw error
       }
 
+      addToast("Sugestão aprovada com sucesso!", "success")
       await supabase.from('sugestoes').delete().eq('id', sugestao.id)
       setSuggestions(prev => prev.filter(s => s.id !== sugestao.id))
       
     } catch (error: any) {
-      alert(`Erro ao aprovar: ${error.message || error}`)
+      addToast(`Erro ao aprovar: ${error.message || error}`, "error")
     } finally {
       setProcessing(null)
     }
