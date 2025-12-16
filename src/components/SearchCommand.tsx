@@ -52,7 +52,6 @@ export function SearchCommand() {
       if (data) {
         setFoundSongs(data)
 
-        // --- SPLIT DE ARTISTAS ---
         const allArtistsOnResult = data.flatMap(m => 
             m.artista ? m.artista.split(',').map((a: string) => a.trim()) : []
         )

@@ -11,7 +11,7 @@ export function SavedSongsPage() {
   const [songs, setSongs] = useState<Musica[]>([])
 
   useEffect(() => {
-    // Carrega instantaneamente do LocalStorage
+    
     setSongs(storage.getSavedSongs())
   }, [])
 

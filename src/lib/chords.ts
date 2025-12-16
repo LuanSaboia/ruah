@@ -1,14 +1,11 @@
-// Adicionado 'export' para usarmos no componente visual
 export const SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-// Função auxiliar para quebrar "Cm7" em { root: "C", suffix: "m7" }
 export function getChordRoot(chord: string) {
   const match = chord.match(/^([A-G][#b]?)(.*)$/);
   if (!match) return { root: null, suffix: "" };
   
   let [_, root, suffix] = match;
   
-  // Normaliza bemóis para sustenidos (para bater com a nossa SCALE)
   if (root === "Db") root = "C#";
   if (root === "Eb") root = "D#";
   if (root === "Gb") root = "F#";
@@ -25,7 +22,6 @@ export function transposeChord(chord: string, semitones: number): string {
   const index = SCALE.indexOf(root);
   if (index === -1) return chord;
 
-  // Matemática circular (0 a 11)
   let newIndex = (index + semitones) % 12;
   if (newIndex < 0) newIndex += 12;
 

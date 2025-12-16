@@ -18,7 +18,6 @@ export function LoginPage() {
     setLoading(true)
     setError(null)
 
-    // Login com Supabase
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -28,7 +27,6 @@ export function LoginPage() {
       setError(error.message === "Invalid login credentials" ? "Email ou senha incorretos." : error.message)
       setLoading(false)
     } else {
-      // Sucesso! Vai para a lista de admin
       navigate("/admin-dashboard")
     }
   }

@@ -42,7 +42,6 @@ export function CategoriesPage() {
     fetchData()
   }, [])
 
-  // Detecção Automática (Vindo da música)
   useEffect(() => {
     if (location.state && location.state.autoSelect) {
         setSelectedCategory(location.state.autoSelect)

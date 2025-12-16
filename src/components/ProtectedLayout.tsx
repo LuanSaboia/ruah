@@ -7,12 +7,12 @@ export function ProtectedLayout() {
   const [session, setSession] = useState<boolean | null>(null)
 
   useEffect(() => {
-    // 1. Verifica sessão atual ao carregar
+    // Verifica sessão atual ao carregar
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(!!session)
     })
 
-    // 2. Ouve mudanças (ex: logout em outra aba)
+    // Ouve mudanças (ex: logout em outra aba)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -36,6 +36,6 @@ export function ProtectedLayout() {
     return <Navigate to="/login" replace />
   }
 
-  // Se tem sessão, mostra o conteúdo (AdminList ou AdminPage)
+  // Se tem sessão, mostra o conteúdo
   return <Outlet />
 }

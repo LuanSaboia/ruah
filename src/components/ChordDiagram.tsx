@@ -43,7 +43,7 @@ export function ChordDiagram({ name, frets, barres = [] }: ChordDiagramProps) {
            <rect
              key={`barre-${barreFret}`}
              x={xStart}
-             y={yStart + (barreFret * fretSpacing) - (fretSpacing / 1.5)} // Ajuste fino da posição
+             y={yStart + (barreFret * fretSpacing) - (fretSpacing / 1.5)}
              width={5 * stringSpacing}
              height={8}
              rx={4}
@@ -52,7 +52,7 @@ export function ChordDiagram({ name, frets, barres = [] }: ChordDiagramProps) {
            />
         ))}
 
-        {/* 4. Bolinhas (Dedos) */}
+        {/* 4. Dedos */}
         {frets.map((fret, stringIndex) => {
           if (fret <= 0) return null;
           return (

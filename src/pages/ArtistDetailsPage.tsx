@@ -36,7 +36,6 @@ export function ArtistDetailsPage() {
     fetchArtistSongs()
   }, [artistName])
 
-  // Filtro
   const filteredSongs = selectedLetter
     ? songs.filter(song => {
         if (selectedLetter === '#') return /^\d/.test(song.titulo)
@@ -103,7 +102,7 @@ export function ArtistDetailsPage() {
                   key={song.id}
                   title={song.titulo}
                   artist={song.artista}
-                  // category={song.categoria} // Opcional mostrar categoria aqui
+                  // category={song.categoria}
                   onClick={() => navigate(`/musica/${song.id}`)}
               />
             ))}

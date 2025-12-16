@@ -8,7 +8,7 @@ export function AutoScroll() {
   const [speed, setSpeed] = useState(1) // 1 (Lento) a 5 (Rápido)
 
   useEffect(() => {
-    let interval: any // ou NodeJS.Timeout se estiver num ambiente que suporte
+    let interval: any
 
     if (isPlaying) {
       // Quanto maior a velocidade, menor o delay (mais rápido)

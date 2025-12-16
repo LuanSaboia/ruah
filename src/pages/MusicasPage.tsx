@@ -31,7 +31,6 @@ export function MusicasPage() {
     fetchAllSongs()
   }, [])
 
-  // Filtragem
   const filteredSongs = selectedLetter
     ? songs.filter(song => {
         if (selectedLetter === '#') return /^\d/.test(song.titulo)

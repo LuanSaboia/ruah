@@ -4,7 +4,7 @@ export function useIsTouch() {
   const [isTouch, setIsTouch] = useState(false)
 
   useEffect(() => {
-    // Verifica se o dispositivo suporta toque (touch)
+    
     const checkTouch = () => {
       setIsTouch(window.matchMedia("(pointer: coarse)").matches)
     }

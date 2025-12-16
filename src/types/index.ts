@@ -11,3 +11,11 @@ export interface Musica {
   idioma?: string
   created_at?: string
 }
+
+export interface Setlist {
+  id: string;
+  nome: string;
+  descricao?: string;
+  dataCriacao: string;
+  musicas: Musica[];
+}

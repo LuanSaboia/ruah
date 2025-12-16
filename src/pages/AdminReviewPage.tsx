@@ -62,9 +62,9 @@ export function AdminReviewPage() {
     setProcessing(sugestao.id)
     
     try {
-      // Se tiver musica_id válido, é uma EDIÇÃO
+      
       if (sugestao.musica_id && sugestao.musica_id > 0) {
-        // === MODO EDIÇÃO (UPDATE) ===
+        
         const { error } = await supabase
           .from('musicas')
           .update({
@@ -75,14 +75,14 @@ export function AdminReviewPage() {
             categoria: sugestao.categoria,
             numero_cantai: sugestao.numero_cantai,
             link_audio: sugestao.link_audio,
-            revisado_por: sugestao.enviado_por || "Anônimo" // O Revisor assina aqui
+            revisado_por: sugestao.enviado_por || "Anônimo" 
           })
           .eq('id', sugestao.musica_id)
         
         if (error) throw error
 
       } else {
-        // === MODO NOVA MÚSICA (INSERT) ===
+        
         const { error } = await supabase.from('musicas').insert([{
             titulo: sugestao.titulo,
             artista: sugestao.artista,
@@ -91,7 +91,7 @@ export function AdminReviewPage() {
             categoria: sugestao.categoria,
             numero_cantai: sugestao.numero_cantai,
             link_audio: sugestao.link_audio,
-            enviado_por: sugestao.enviado_por || "Anônimo", // O Criador assina aqui
+            enviado_por: sugestao.enviado_por || "Anônimo",
             revisado_por: null
         }])
         

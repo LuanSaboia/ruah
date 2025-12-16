@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 
 export function useTheme() {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
-    // Tenta pegar do localStorage ou usa 'light' como padrão
     if (typeof window !== "undefined") {
       return (localStorage.getItem("theme") as "light" | "dark") || "light"
     }
@@ -20,5 +19,5 @@ export function useTheme() {
     setTheme((prev) => (prev === "light" ? "dark" : "light"))
   }
 
-  return { theme, toggleTheme }
+  return { theme, setTheme, toggleTheme }
 }

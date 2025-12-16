@@ -66,7 +66,7 @@ export function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <CategoryCard 
               icon={Flame} label="Louvor" color="text-orange-500" bg="bg-orange-50 dark:bg-orange-950/30" 
-              onClick={() => navigate('/categorias')} // Futuro: Filtrar direto
+              onClick={() => navigate('/categorias')}
             />
             <CategoryCard 
               icon={Heart} label="Adoração" color="text-red-500" bg="bg-red-50 dark:bg-red-950/30" 
@@ -105,7 +105,6 @@ export function HomePage() {
                     title={song.titulo}
                     artist={song.artista}
                     category={song.categoria}
-                    // Adicionamos um ícone de "Novo" visualmente
                     onClick={() => navigate(`/musica/${song.id}`)}
                   />
                 ))}
@@ -125,7 +124,6 @@ export function HomePage() {
   )
 }
 
-// Componente auxiliar para os cards de categoria
 function CategoryCard({ icon: Icon, label, color, bg, onClick }: any) {
   return (
     <Card 

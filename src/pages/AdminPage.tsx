@@ -22,7 +22,7 @@ export function AdminPage() {
     artista: "",
     numero: "",
     link_audio: "",
-    conteudo: "", // Um único campo para Letra + Cifra
+    conteudo: "",
     categorias: [] as string[]
   })
 
@@ -36,7 +36,7 @@ export function AdminPage() {
             artista: data.artista,
             numero: data.numero_cantai ? String(data.numero_cantai) : "",
             link_audio: data.link_audio || "",
-            // PREFERÊNCIA: Se tiver cifra salva, carrega ela. Senão carrega a letra.
+          
             conteudo: data.cifra || data.letra, 
             categorias: data.categoria || []
           })
@@ -62,9 +62,6 @@ export function AdminPage() {
     setLoading(true)
     setStatus(null)
 
-    // LÓGICA INTELIGENTE:
-    // 1. O 'conteudo' completo (com [G]) vai para o campo 'cifra'
-    // 2. Criamos uma versão limpa (sem [G]) para o campo 'letra' (para busca e leitura)
     const letraLimpa = form.conteudo.replace(/\[.*?\]/g, "")
 
     const payload = {
@@ -74,7 +71,7 @@ export function AdminPage() {
       numero_cantai: form.numero ? parseInt(form.numero) : null,
       link_audio: form.link_audio,
       letra: letraLimpa,
-      cifra: form.conteudo // Salva o original com acordes aqui
+      cifra: form.conteudo 
     }
 
     try {

@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CifraDisplay } from "@/components/CifraDisplay"
-import { ArrowLeft, Share2, Loader2, Download, Check, PlayCircle, Guitar, FileText, Languages, AlertTriangle } from "lucide-react"
+import { ArrowLeft, Share2, Loader2, Download, Check, PlayCircle, Guitar, FileText, Languages, AlertTriangle, ListPlus } from "lucide-react"
 import type { Musica } from "@/types"
 import { storage } from "@/lib/storage"
 import {
@@ -21,6 +21,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { AutoScroll } from "@/components/AutoScroll"
+import { setlistStorage } from "@/lib/setlist-storage"
+import { useToast } from "@/lib/useToast"
 
 function getYouTubeId(url: string | null) {
   if (!url) return null;
@@ -51,6 +54,27 @@ export function SongPage() {
   const [showCifra, setShowCifra] = useState(false)
   const [isVideoOpen, setIsVideoOpen] = useState(false)
   const [versions, setVersions] = useState<{id: number, idioma: string, titulo: string}[]>([])
+  const [setlists, setSetlists] = useState<any[]>([])
+  const [isAddToSetlistOpen, setIsAddToSetlistOpen] = useState(false)
+  const { addToast } = useToast()
+
+  const handleOpenSetlistModal = () => {
+    setSetlists(setlistStorage.getAll())
+    setIsAddToSetlistOpen(true)
+  }
+
+  const handleAddToSetlist = (setlistId: string) => {
+        if (song) {
+            const added = setlistStorage.addSong(setlistId, song)
+            
+            if (added) {
+                addToast("Adicionado ao repertório!", "success")
+                setIsAddToSetlistOpen(false)
+            } else {
+                addToast("Esta música já está na lista.", "error")
+            }
+        }
+    }
 
   useEffect(() => {
     async function fetchSongAndVersions() {
@@ -108,7 +132,6 @@ export function SongPage() {
     }
   }
 
-  // --- NAVEGAÇÃO INTELIGENTE PARA CATEGORIAS ---
   const handleCategoryClick = (category: string) => {
     navigate('/categorias', { state: { autoSelect: category } })
   }
@@ -194,6 +217,38 @@ export function SongPage() {
                         </DropdownMenu>
                     )}
 
+                    <Dialog open={isAddToSetlistOpen} onOpenChange={setIsAddToSetlistOpen}>
+                      <DialogTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={handleOpenSetlistModal} className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
+                              <ListPlus className="w-4 h-4" />
+                          </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                          <DialogHeader>
+                              <DialogTitle>Adicionar ao Repertório</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-2 py-2">
+                              {setlists.length === 0 ? (
+                                  <div className="text-center py-4">
+                                      <p className="text-zinc-500 mb-4">Você ainda não tem listas.</p>
+                                      <Button onClick={() => navigate('/repertorios')} variant="outline">Criar Lista</Button>
+                                  </div>
+                              ) : (
+                                  setlists.map(list => (
+                                      <button
+                                          key={list.id}
+                                          onClick={() => handleAddToSetlist(list.id)}
+                                          className="w-full text-left p-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg flex items-center justify-between border border-transparent hover:border-zinc-200 transition-all"
+                                      >
+                                          <span className="font-medium">{list.nome}</span>
+                                          <span className="text-xs text-zinc-500">{list.musicas.length} músicas</span>
+                                      </button>
+                                  ))
+                              )}
+                          </div>
+                      </DialogContent>
+                  </Dialog>
+
                     {youtubeId && (
                         <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
                           <DialogTrigger asChild>
@@ -244,14 +299,14 @@ export function SongPage() {
         </div>
 
         {hasCifra && (
-            <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 dark:border-zinc-800">
-                <button onClick={() => setShowCifra(false)} className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${!showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}>
-                    <FileText className="w-4 h-4" /> Letra
-                </button>
-                <button onClick={() => setShowCifra(true)} className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}>
-                    <Guitar className="w-4 h-4" /> Cifra
-                </button>
-            </div>
+              <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 dark:border-zinc-800">
+                  <button onClick={() => setShowCifra(false)} className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${!showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}>
+                      <FileText className="w-4 h-4" /> Letra
+                  </button>
+                  <button onClick={() => setShowCifra(true)} className={`pb-2 px-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${showCifra ? 'border-blue-600 text-blue-600' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400'}`}>
+                      <Guitar className="w-4 h-4" /> Cifra
+                  </button>
+              </div>
         )}
 
         {showCifra && hasCifra ? (
@@ -273,7 +328,7 @@ export function SongPage() {
             Encontrou algum erro? Sugerir correção
           </button>
        </div>
-
+        <AutoScroll />
       </main>
     </div>
   )

@@ -39,7 +39,6 @@ export function ArtistsPage() {
     fetchArtists()
   }, [])
 
-  // Filtro
   const filteredArtists = selectedLetter
     ? artists.filter(artist => {
         if (selectedLetter === '#') return /^\d/.test(artist)

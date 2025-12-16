@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom"
 
-// Importações das Páginas
 import { HomePage } from "@/pages/HomePage"
 import { SongPage } from "@/pages/SongPage"
 import { AdminPage } from "@/pages/AdminPage"
@@ -15,14 +14,18 @@ import { CategoriesPage } from "@/pages/CategoriesPage"
 import { ContributePage } from "@/pages/ContributePage"
 import { AdminReviewPage } from "@/pages/AdminReviewPage"
 import { AdminDashboard } from "@/pages/AdminDashboard"
-import { SavedSongsPage } from "@/pages/SavedSongsPage" // <--- Importe a página de Salvas
+import { SavedSongsPage } from "@/pages/SavedSongsPage"
+import { TunerPage } from "./pages/TunerPage"
+import { SetlistsPage } from "./pages/SetlistsPage"
+import { SetlistDetailPage } from "./pages/SetlistDetailPage"
+import { PresentationPage } from "./pages/PresentationPage"
+import { LiturgyBuilderPage } from "./pages/LiturgyBuilderPage"
 
-// 1. Criamos um componente interno para poder usar os hooks de navegação
 function AppRoutes() {
   const navigate = useNavigate()
   const location = useLocation()
   
-  // Estado para controlar offline (opcional visualmente, mas útil pra lógica)
+  // Estado para controlar offline
   const [_isOffline, setIsOffline] = useState(!navigator.onLine)
 
   useEffect(() => {
@@ -63,13 +66,17 @@ function AppRoutes() {
       <Route path="/artistas" element={<ArtistsPage />} />
       <Route path="/artistas/:nome" element={<ArtistDetailsPage />} />
       <Route path="/categorias" element={<CategoriesPage />} />
+      <Route path="/afinador" element={<TunerPage />} />
+      <Route path="/repertorios" element={<SetlistsPage />} />
+      <Route path="/repertorios/:id" element={<SetlistDetailPage />} />
+      <Route path="/apresentacao/:id" element={<PresentationPage />} />
+      <Route path="/liturgia" element={<LiturgyBuilderPage />} />
       
       <Route path="/contribuir" element={<ContributePage />} />
       <Route path="/login" element={<LoginPage />} />
       
       {/* Rotas Protegidas (Admin) */}
       <Route element={<ProtectedLayout />}>
-        {/* Mantive o /admin apontando para o cadastro secreto conforme seu arquivo original */}
         <Route path="/admin" element={<AdminPage />} /> 
         <Route path="/admin-secret-cadastro" element={<AdminPage />} />
         
@@ -81,7 +88,6 @@ function AppRoutes() {
   )
 }
 
-// 2. O App principal apenas fornece o BrowserRouter para o AppRoutes funcionar
 function App() {
   return (
     <BrowserRouter>

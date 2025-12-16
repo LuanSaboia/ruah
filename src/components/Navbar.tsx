@@ -1,118 +1,192 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { SearchCommand } from "./SearchCommand"
-import { Menu, Sun, Moon, Home, List, Mic2, Music, PlusCircle, WifiOff } from "lucide-react"
-import { useTheme } from "@/lib/useTheme"
-import { Button } from "@/components/ui/button"
+import { Button } from "./ui/button"
+import { 
+  Menu, 
+  Home, 
+  ListMusic, 
+  Mic2, 
+  Music2, 
+  Users, 
+  LayoutList, 
+  Heart, 
+  PlusCircle, 
+  LogIn, 
+  LogOut, 
+  User, 
+  Moon, 
+  Sun,
+  Settings,
+  CalendarDays
+} from "lucide-react"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetClose
 } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useTheme } from "@/lib/useTheme"
+import { useEffect, useState } from "react"
+import { supabase } from "@/lib/supabase"
 
 export function Navbar() {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
+  const navigate = useNavigate()
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    navigate("/login")
+  }
+
+  const MenuLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => (
+    <SheetClose asChild>
+      <Link 
+        to={to} 
+        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-md transition-all"
+      >
+        <Icon className="w-5 h-5" />
+        {label}
+      </Link>
+    </SheetClose>
+  )
 
   return (
-    <nav className="w-full bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 shadow-sm sticky top-0 z-50 transition-colors">
-      <div className="container mx-auto px-4 h-16 flex justify-between items-center gap-4">
+    <nav className="sticky top-0 z-40 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         
-        {/* Lado Esquerdo: Menu Mobile (Sheet) + Logo */}
+        {/* --- LADO ESQUERDO: MENU LATERAL + LOGO --- */}
         <div className="flex items-center gap-3">
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="shrink-0">
+                <Menu className="w-6 h-6 text-zinc-700 dark:text-zinc-200" />
+                <span className="sr-only">Abrir menu</span>
+              </Button>
+            </SheetTrigger>
             
-            {/* O MENU MOBILE COMEÇA AQUI */}
-            <div className="md:hidden">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                    <Menu className="w-6 h-6" />
-                  </Button>
-                </SheetTrigger>
-                
-                <SheetContent side="left" className="w-[300px] bg-white dark:bg-zinc-950 dark:border-zinc-800">
-                  <SheetHeader className="mb-6 text-left">
-                    <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                      Ruah
-                      <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-4" />
-                    </SheetTitle>
-                  </SheetHeader>
-                  
-                  {/* Links de Navegação Mobile */}
-                  <div className="flex flex-col gap-2">
-                    <MobileLink href="/" icon={Home}>Início</MobileLink>
-                    <MobileLink href="/categorias" icon={List}>Categorias</MobileLink>
-                    <MobileLink href="/artistas" icon={Mic2}>Artistas</MobileLink>
-                    <MobileLink href="/musicas" icon={Music}>Músicas</MobileLink>
+            <SheetContent side="left" className="w-[300px] sm:w-[350px] pr-0">
+              <SheetHeader className="px-4 text-left mb-6">
+                <SheetTitle className="flex items-center gap-2">
+                    <img src="/ruah.svg" alt="Ruah Logo" className="w-8 h-8" />
+                    <span className="font-bold text-xl">Ruah</span>
+                </SheetTitle>
+              </SheetHeader>
+              
+              <div className="flex flex-col h-full overflow-y-auto pb-20 scrollbar-hide">
+                <div className="px-2 space-y-1">
+                    <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-2">Principal</p>
+                    <MenuLink to="/" icon={Home} label="Início" />
+                    <MenuLink to="/repertorios" icon={ListMusic} label="Meus Repertórios" />
+                    <MenuLink to="/liturgia" icon={CalendarDays} label="Gerador de Liturgia" />
+                    <MenuLink to="/afinador" icon={Mic2} label="Afinador Online" />
                     
-                    <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-4" />
-                    <MobileLink href="/contribuir" icon={PlusCircle}>Contribuir</MobileLink>
+                    <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-6">Explorar</p>
+                    <MenuLink to="/artistas" icon={Users} label="Artistas" />
+                    <MenuLink to="/categorias" icon={LayoutList} label="Categorias" />
+                    <MenuLink to="/musicas" icon={Music2} label="Todas as Músicas" />
 
-                    {/* Se estiver logado (ou se quiser deixar visível o link da análise) */}
-                    <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-4" />
-                    <MobileLink href="/salvas" icon={WifiOff}>Salvas</MobileLink>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-            {/* FIM DO MENU MOBILE */}
+                    <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-6">Pessoal</p>
+                    <MenuLink to="/salvas" icon={Heart} label="Músicas Favoritas" />
+                    <MenuLink to="/contribuir" icon={PlusCircle} label="Enviar Cifra / Correção" />
+                    
+                    {user && (
+                        <>
+                           <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-6">Admin</p>
+                           <MenuLink to="/admin-dashboard" icon={Settings} label="Painel Administrativo" />
+                        </>
+                    )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
 
-            <Link to="/">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent cursor-pointer">
-                  Ruah
-              </h1>
-            </Link>
+          {/* LOGO (Clicável para Home) */}
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/ruah.svg" alt="Ruah" className="w-8 h-8" />
+            <span className="font-bold text-xl tracking-tight text-zinc-900 dark:text-white hidden sm:inline-block">Ruah</span>
+          </Link>
+
         </div>
 
-        <div className="flex-1 max-w-lg mx-2 md:mx-4 min-w-0"> 
+        {/* --- CENTRO: BARRA DE BUSCA --- */}
+        <div className="flex-1 max-w-xl flex justify-center md:justify-end lg:justify-center">
             <SearchCommand />
         </div>
 
-        {/* Lado Direito: Ações Desktop */}
-        <div className="flex items-center gap-2 md:gap-4">
-          
-          {/* Botão de Tema */}
-          <button 
-            onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 transition-colors"
-          >
-            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-          </button>
+        {/* --- DIREITA: USUÁRIO E TEMA --- */}
+        <div className="flex items-center gap-2">
+            
+            {/* TEMA (Sol/Lua) */}
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="text-zinc-500 dark:text-zinc-400"
+            >
+                {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
 
-          {/* Links Desktop (Somente telas grandes) */}
-          <div className="hidden md:flex items-center gap-6 ml-2">
-             <Link to="/" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Início</Link>
-             <Link to="/categorias" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Categorias</Link>
-             <Link to="/artistas" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Artistas</Link>
-             <Link to="/musicas" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Músicas</Link>
-             <Link to="/salvas" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 transition-colors">Offline</Link>
-             <Link to="/contribuir">
-                <Button variant="outline" size="sm" className="hidden md:flex gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
-                    <PlusCircle className="w-4 h-4" /> Contribuir
-                </Button>
-             </Link>
-          </div>
-
-          {/* Avatar */}
-          {/* <div className="hidden md:flex w-8 h-8 bg-zinc-100 dark:bg-zinc-800 rounded-full items-center justify-center border border-zinc-200 dark:border-zinc-700 cursor-pointer">
-            <User className="w-4 h-4 text-zinc-400" />
-          </div> */}
+            {/* MENU DO USUÁRIO (DROPDOWN) */}
+            {user ? (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-700 w-9 h-9">
+                            <User className="w-5 h-5 text-zinc-600 dark:text-zinc-300" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                        <div className="px-2 py-1.5 text-xs text-zinc-500 break-all">
+                            {user.email}
+                        </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/repertorios')} className="cursor-pointer">
+                            <ListMusic className="w-4 h-4 mr-2" /> Meus Repertórios
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/salvas')} className="cursor-pointer">
+                            <Heart className="w-4 h-4 mr-2" /> Favoritos
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer">
+                            <LogOut className="w-4 h-4 mr-2" /> Sair
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            ) : (
+                <Link to="/login">
+                    <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-full px-4">
+                        <LogIn className="w-4 h-4" />
+                        <span className="hidden sm:inline">Entrar</span>
+                    </Button>
+                </Link>
+            )}
         </div>
 
       </div>
     </nav>
-  )
-}
-
-// Pequeno componente auxiliar para os links do menu mobile ficarem padronizados
-function MobileLink({ href, icon: Icon, children }: { href: string, icon: any, children: React.ReactNode }) {
-  return (
-    <Link 
-      to={href} 
-      className="flex items-center gap-3 px-4 py-3 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors font-medium"
-    >
-      <Icon className="w-5 h-5 text-zinc-500" />
-      {children}
-    </Link>
   )
 }
