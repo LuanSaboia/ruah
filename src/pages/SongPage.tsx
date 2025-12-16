@@ -24,25 +24,13 @@ import {
 import { AutoScroll } from "@/components/AutoScroll"
 import { setlistStorage } from "@/lib/setlist-storage"
 import { useToast } from "@/lib/useToast"
+import { LANGUAGE_MAP } from "@/constants/languages"
 
 function getYouTubeId(url: string | null) {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
-}
-
-const LANGUAGE_LABELS: Record<string, string> = {
-  'pt-BR': '🇧🇷 Português',
-  'en': '🇺🇸 English',
-  'es': '🇪🇸 Español',
-  'it': '🇮🇹 Italiano',
-  'fr': '🇫🇷 Français',
-  'la': '🇻🇦 Latim',
-  'he': '🇮🇱 Hebraico',
-  'hu': '🇭🇺 Húngaro',
-  'pl': '🇵🇱 Polonês',
-  'de': '🇩🇪 Alemão'
 }
 
 export function SongPage() {
@@ -205,11 +193,11 @@ export function SongPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem disabled className="opacity-100 font-bold bg-zinc-100 dark:bg-zinc-800">
-                                    {LANGUAGE_LABELS[song.idioma || 'pt-BR'] || song.idioma} (Atual)
+                                    {LANGUAGE_MAP[song.idioma || 'pt-BR'] || song.idioma} (Atual)
                                 </DropdownMenuItem>
                                 {versions.map(v => (
                                     <DropdownMenuItem key={v.id} onClick={() => navigate(`/musica/${v.id}`)} className="cursor-pointer gap-2">
-                                        <span>{LANGUAGE_LABELS[v.idioma || 'pt-BR'] || v.idioma}</span>
+                                        <span>{LANGUAGE_MAP[v.idioma || 'pt-BR'] || v.idioma}</span>
                                         <span className="text-xs text-zinc-400 ml-auto">{v.titulo !== song.titulo ? `(${v.titulo})` : ''}</span>
                                     </DropdownMenuItem>
                                 ))}
@@ -293,7 +281,7 @@ export function SongPage() {
                   </Badge>
                 )}
                 <Badge variant="secondary" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                    {LANGUAGE_LABELS[song.idioma || 'pt-BR'] || song.idioma}
+                    {LANGUAGE_MAP[song.idioma || 'pt-BR'] || song.idioma}
                 </Badge>
             </div>
         </div>
