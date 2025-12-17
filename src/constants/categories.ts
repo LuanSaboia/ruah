@@ -8,6 +8,7 @@ export const CATEGORIAS_DISPONIVEIS = [
   "Maria",
   "Entrada",
   "Ato Penitencial",
+  "Glória",
   "Santo",
   "Aclamação do Evangelho",
   "Ofertório",
