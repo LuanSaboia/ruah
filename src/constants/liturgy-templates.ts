@@ -36,7 +36,7 @@ export const LITURGY_TEMPLATES: LiturgyTemplate[] = [
   },
   {
     id: 'culto',
-    name: 'Culto / Celebração',
+    name: 'Celebração da Palavra',
     description: 'Estrutura genérica para celebrações da Palavra.',
     slots: [
       'Entrada',
