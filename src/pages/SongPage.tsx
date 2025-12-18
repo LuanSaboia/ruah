@@ -205,6 +205,25 @@ export function SongPage() {
                         </DropdownMenu>
                     )}
 
+                    {youtubeId && (
+                        <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" className="gap-2 text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50 dark:bg-red-900/10 dark:border-red-900 dark:text-red-400">
+                                <PlayCircle className="w-4 h-4" /> 
+                                <span className="hidden sm:inline">Ouvir</span>
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[600px] p-0 bg-black border-zinc-800 overflow-hidden">
+                            <DialogHeader className="p-4 absolute top-0 left-0 z-10 w-full bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+                              <DialogTitle className="text-white text-sm font-medium drop-shadow-md">{song.titulo}</DialogTitle>
+                            </DialogHeader>
+                            <div className="aspect-video w-full">
+                              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                    )}
+
                     <Dialog open={isAddToSetlistOpen} onOpenChange={setIsAddToSetlistOpen}>
                       <DialogTrigger asChild>
                           <Button variant="outline" size="icon" onClick={handleOpenSetlistModal} className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400">
@@ -237,29 +256,10 @@ export function SongPage() {
                       </DialogContent>
                   </Dialog>
 
-                    {youtubeId && (
-                        <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" className="gap-2 text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50 dark:bg-red-900/10 dark:border-red-900 dark:text-red-400">
-                                <PlayCircle className="w-4 h-4" /> 
-                                <span className="hidden sm:inline">Ouvir</span>
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-[600px] p-0 bg-black border-zinc-800 overflow-hidden">
-                            <DialogHeader className="p-4 absolute top-0 left-0 z-10 w-full bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
-                              <DialogTitle className="text-white text-sm font-medium drop-shadow-md">{song.titulo}</DialogTitle>
-                            </DialogHeader>
-                            <div className="aspect-video w-full">
-                              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                    )}
-
                     <Button variant="outline" size="icon" onClick={toggleSave} className={isSaved ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400" : "dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"}>
                         {isSaved ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
                     </Button>
-                    <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"><Share2 className="w-4 h-4" /></Button>
+                    {/* <Button variant="outline" size="icon" className="dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"><Share2 className="w-4 h-4" /></Button> */}
                 </div>
             </div>
             

@@ -9,14 +9,16 @@ export const CATEGORIAS_DISPONIVEIS = [
   "Entrada",
   "Ato Penitencial",
   "Glória",
-  "Santo",
   "Aclamação do Evangelho",
   "Ofertório",
-  "Ação de Graças",
+  "Santo",
+  "Cordeiro de Deus",
   "Comunhão",
+  "Ação de Graças",
   "Canto Final",
   "Páscoa",
-  "Natal"
+  "Natal",
+  "Geral"
 ] as const;
 
 // Cria um tipo baseado na lista acima
