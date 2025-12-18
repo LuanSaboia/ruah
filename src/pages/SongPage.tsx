@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CifraDisplay } from "@/components/CifraDisplay"
-import { ArrowLeft, Share2, Loader2, Download, Check, PlayCircle, Guitar, FileText, Languages, AlertTriangle, ListPlus } from "lucide-react"
+import { ArrowLeft, Loader2, Download, Check, PlayCircle, Guitar, FileText, Languages, AlertTriangle, ListPlus } from "lucide-react"
 import type { Musica } from "@/types"
 import { storage } from "@/lib/storage"
 import {
