@@ -1,27 +1,32 @@
 import { Link, useNavigate } from "react-router-dom"
 import { SearchCommand } from "./SearchCommand"
 import { Button } from "./ui/button"
-import { Input } from "./ui/input"
-import { Label } from "./ui/label"
-import { 
-  Menu, 
-  Home, 
-  ListMusic, 
-  Mic2, 
-  Music2, 
-  Users, 
-  LayoutList, 
-  Heart, 
-  LogIn, 
-  LogOut, 
-  User, 
-  Loader2,
-  Lock
+import {
+  Menu,
+  Home,
+  ListMusic,
+  Mic2,
+  Music2,
+  Users,
+  LayoutList,
+  Heart,
+  PlusCircle,
+  LogIn,
+  LogOut,
+  Moon,
+  Sun,
+  Settings,
+  CalendarDays,
+  Lock,
+  Loader2
 } from "lucide-react"
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
+  SheetClose
 } from "@/components/ui/sheet"
 import {
   DropdownMenu,
@@ -31,27 +36,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { useTheme } from "@/lib/useTheme"
-import { useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/contexts/AuthContext" // <--- Usando nosso contexto novo
+import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/lib/useToast"
+import { useState } from "react"
+// IMPORTS CORRETOS (Usando os seus componentes da pasta UI para ter estilo)
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export function Navbar() {
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
-  const { user, signOut } = useAuth() // <--- Pega o usuário do contexto global
+  const { user, signOut } = useAuth()
   const { addToast } = useToast()
-
-  // Estados do Login Modal
+  const isAdmin = user?.email === "admin@ruah.com"
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState("")
@@ -60,216 +67,206 @@ export function Navbar() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) {
-      addToast("Erro ao entrar: " + error.message, "error")
+      addToast("Erro: " + error.message, "error")
       setLoading(false)
     } else {
       addToast("Bem-vindo de volta!", "success")
-      setIsLoginOpen(false) // Fecha o modal
+      addToast("Bem-vindo de volta!" + user?.email, "success")
       setLoading(false)
-      // Não precisa navigate, o AuthContext atualiza a tela sozinho
+      setIsLoginOpen(false) // Fecha a janelinha
     }
   }
 
+  // Função para deslogar
   const handleLogout = async () => {
     await signOut()
-    addToast("Você saiu da conta.", "info")
+    addToast("Até logo!", "info")
     navigate("/")
   }
 
-  // Pega as iniciais para o Avatar
-  const getInitials = () => {
-    if (!user) return "U"
-    // Tenta pegar do metadata, ou usa o email
-    const name = user.user_metadata?.full_name || user.email || "U"
-    return name.substring(0, 2).toUpperCase()
-  }
-
-  // Verifica se é admin (regra simples por email por enquanto)
-  const isAdmin = user?.email === "seu_email_admin@gmail.com" // Troque pelo seu email real
+  const MenuLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => (
+    <SheetClose asChild>
+      <Link
+        to={to}
+        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-md transition-all"
+      >
+        <Icon className="w-5 h-5" />
+        {label}
+      </Link>
+    </SheetClose>
+  )
 
   return (
-    <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
+    <nav className="sticky top-0 z-40 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        
-        {/* --- MENU MOBILE (Mantido igual) --- */}
-        <div className="md:hidden">
+
+        {/* --- LADO ESQUERDO: MENU LATERAL + LOGO --- */}
+        <div className="flex items-center gap-3">
+
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+              <Button variant="ghost" size="icon" className="shrink-0">
+                <Menu className="w-6 h-6 text-zinc-700 dark:text-zinc-200" />
+                <span className="sr-only">Abrir menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-              <div className="flex flex-col gap-6 mt-6">
-                <Link to="/" className="flex items-center gap-2 font-bold text-xl text-zinc-900 dark:text-white">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                    <Music2 className="w-5 h-5" />
-                  </div>
-                  Ruah
-                </Link>
-                
-                <div className="flex flex-col gap-2">
-                  <Link to="/" className="flex items-center gap-3 px-4 py-3 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                    <Home className="w-5 h-5" /> Início
-                  </Link>
-                  <Link to="/musicas" className="flex items-center gap-3 px-4 py-3 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                    <ListMusic className="w-5 h-5" /> Músicas
-                  </Link>
-                  <Link to="/artistas" className="flex items-center gap-3 px-4 py-3 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                    <Mic2 className="w-5 h-5" /> Artistas
-                  </Link>
-                  <Link to="/repertorios" className="flex items-center gap-3 px-4 py-3 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                    <LayoutList className="w-5 h-5" /> Repertórios
-                  </Link>
-                  <Link to="/afinador" className="flex items-center gap-3 px-4 py-3 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                    <Music2 className="w-5 h-5" /> Afinador
-                  </Link>
-                  <Link to="/contribuir" className="flex items-center gap-3 px-4 py-3 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                    <Users className="w-5 h-5" /> Contribuir
-                  </Link>
+
+            <SheetContent side="left" className="w-[300px] sm:w-[350px] pr-0">
+              <SheetHeader className="px-4 text-left mb-6">
+                <SheetTitle className="flex items-center gap-2">
+                  <img src="/ruah.svg" alt="Ruah Logo" className="w-8 h-8" />
+                  <span className="font-bold text-xl">Ruah</span>
+                </SheetTitle>
+              </SheetHeader>
+
+              <div className="flex flex-col h-full overflow-y-auto pb-20 scrollbar-hide">
+                <div className="px-2 space-y-1">
+                  <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-2">Principal</p>
+                  <MenuLink to="/" icon={Home} label="Início" />
+                  <MenuLink to="/repertorios" icon={ListMusic} label="Meus Repertórios" />
+                  <MenuLink to="/liturgia" icon={CalendarDays} label="Gerador de Liturgia" />
+                  <MenuLink to="/afinador" icon={Mic2} label="Afinador Online" />
+
+                  <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-6">Explorar</p>
+                  <MenuLink to="/artistas" icon={Users} label="Artistas" />
+                  <MenuLink to="/categorias" icon={LayoutList} label="Categorias" />
+                  <MenuLink to="/musicas" icon={Music2} label="Todas as Músicas" />
+
+                  <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-6">Pessoal</p>
+                  <MenuLink to="/salvas" icon={Heart} label="Músicas Favoritas" />
+                  <MenuLink to="/contribuir" icon={PlusCircle} label="Enviar Cifra / Correção" />
+
+                  {user && (
+                    <>
+                      <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-6">Admin</p>
+                      <MenuLink to="/admin-dashboard" icon={Settings} label="Painel Administrativo" />
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>
           </Sheet>
+
+          {/* LOGO (Clicável para Home) */}
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/ruah.svg" alt="Ruah" className="w-8 h-8" />
+            <span className="font-bold text-xl tracking-tight text-zinc-900 dark:text-white hidden sm:inline-block">Ruah</span>
+          </Link>
+
         </div>
 
-        {/* --- LOGO --- */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-zinc-900 dark:text-white mr-auto md:mr-0">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-            <Music2 className="w-5 h-5" />
-          </div>
-          <span className="hidden sm:inline">Ruah</span>
-        </Link>
-
-        {/* --- LINKS DESKTOP (Mantido igual) --- */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-          <Link to="/musicas" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Músicas</Link>
-          <Link to="/artistas" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Artistas</Link>
-          <Link to="/categorias" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Categorias</Link>
-          <Link to="/repertorios" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Repertórios</Link>
+        {/* --- CENTRO: BARRA DE BUSCA --- */}
+        <div className="flex-1 max-w-xl flex justify-center md:justify-end lg:justify-center">
+          <SearchCommand />
         </div>
 
-        {/* --- DIREITA (Busca + User) --- */}
-        <div className="flex items-center gap-2 md:gap-4">
-            <div className="hidden md:block w-64 lg:w-80">
-                <SearchCommand />
-            </div>
-            
-            <div className="md:hidden">
-                <SearchCommand iconOnly />
-            </div>
+        {/* --- DIREITA: USUÁRIO E TEMA --- */}
+        <div className="flex items-center gap-2">
 
-            {user ? (
-                // --- USUÁRIO LOGADO (DROPDOWN) ---
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800">
-                           {getInitials()}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end">
-                        <DropdownMenuLabel>
-                            <div className="flex flex-col">
-                                <span>{user.user_metadata?.full_name || "Minha Conta"}</span>
-                                <span className="text-xs font-normal text-zinc-500">{user.email}</span>
-                            </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        
-                        {/* LINK EXTRA PARA ADMIN */}
-                        {isAdmin && (
-                           <>
-                             <DropdownMenuItem onClick={() => navigate('/admin-dashboard')} className="cursor-pointer bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 focus:bg-red-100 dark:focus:bg-red-900/40">
-                                <Lock className="w-4 h-4 mr-2" /> Painel Admin
-                             </DropdownMenuItem>
-                             <DropdownMenuSeparator />
-                           </>
-                        )}
+          {/* TEMA (Sol/Lua) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="text-zinc-500 dark:text-zinc-400"
+          >
+            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </Button>
 
-                        <DropdownMenuItem onClick={() => navigate('/repertorios')} className="cursor-pointer">
-                            <ListMusic className="w-4 h-4 mr-2" /> Meus Repertórios
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate('/salvas')} className="cursor-pointer">
-                            <Heart className="w-4 h-4 mr-2" /> Favoritos
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer">
-                            <LogOut className="w-4 h-4 mr-2" /> Sair
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            ) : (
-                // --- USUÁRIO DESLOGADO (MODAL NO BOTÃO) ---
-                <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-full px-4">
-                        <LogIn className="w-4 h-4" />
-                        <span className="hidden sm:inline">Entrar</span>
-                    </Button>
-                  </DialogTrigger>
-                  
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle className="text-center text-2xl font-bold flex flex-col items-center gap-2">
-                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600">
-                          <LogIn className="w-6 h-6" />
-                        </div>
-                        Acesse sua conta
-                      </DialogTitle>
-                      <DialogDescription className="text-center">
-                        Entre para sincronizar seus repertórios e acessar recursos exclusivos.
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <form onSubmit={handleLogin} className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">E-mail</Label>
-                        <Input 
-                          id="email" 
-                          type="email" 
-                          placeholder="seu@email.com" 
-                          value={email}
-                          onChange={e => setEmail(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="password">Senha</Label>
-                        <Input 
-                          id="password" 
-                          type="password" 
-                          placeholder="******" 
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-                      
-                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Entrar"}
-                      </Button>
-                    </form>
+          {/* MENU DO USUÁRIO (DROPDOWN) */}
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-900/30 font-bold">
+                  {/* Pega as iniciais do nome ou e-mail */}
+                  {user.user_metadata?.full_name?.substring(0, 2).toUpperCase() || user.email?.substring(0, 2).toUpperCase()}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                <div className="px-2 py-1.5 text-xs text-zinc-500 break-all">
+                  {user.email}
+                </div>
+                <DropdownMenuSeparator />
 
-                    <div className="text-center text-sm text-zinc-500">
-                       Não tem uma conta?{" "}
-                       <Link 
-                         to="/registro" 
-                         className="text-blue-600 hover:underline font-medium"
-                         onClick={() => setIsLoginOpen(false)} // Fecha modal ao ir pro registro
-                       >
-                         Criar conta grátis
-                       </Link>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-            )}
+                {/* Link de Admin só aparece se for você */}
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate('/admin-dashboard')}>
+                    <Lock className="w-4 h-4 mr-2" /> Painel Admin
+                  </DropdownMenuItem>
+                )}
+
+                <DropdownMenuItem onClick={() => navigate('/repertorios')}>
+                  <ListMusic className="w-4 h-4 mr-2" /> Meus Repertórios
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" /> Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+              <DialogTrigger asChild>
+                <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-full px-4">
+                  <LogIn className="w-4 h-4" />
+                  <span className="hidden sm:inline">Entrar</span>
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="sm:max-w-[400px]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-center">Entrar no Ruah</DialogTitle>
+                  <DialogDescription className="text-center">
+                    Acesse sua conta para sincronizar seus repertórios.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={handleLogin} className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">E-mail</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Senha</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Entrar"}
+                  </Button>
+                </form>
+
+                <div className="text-center text-sm text-zinc-500">
+                  Não tem uma conta?{" "}
+                  <Link to="/registro" className="text-blue-600 hover:underline" onClick={() => setIsLoginOpen(false)}>
+                    Criar conta grátis
+                  </Link>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
       </div>
