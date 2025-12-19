@@ -10,6 +10,7 @@ import { MusicasPage } from "@/pages/MusicasPage"
 import { AdminListPage } from "@/pages/AdminListPage"
 import { ProtectedLayout } from "@/components/ProtectedLayout"
 import { LoginPage } from "@/pages/LoginPage"
+import { RegisterPage } from "@/pages/RegisterPage" // <--- Importando a nova página
 import { CategoriesPage } from "@/pages/CategoriesPage"
 import { ContributePage } from "@/pages/ContributePage"
 import { AdminReviewPage } from "@/pages/AdminReviewPage"
@@ -17,9 +18,12 @@ import { AdminDashboard } from "@/pages/AdminDashboard"
 import { SavedSongsPage } from "@/pages/SavedSongsPage"
 import { TunerPage } from "./pages/TunerPage"
 import { SetlistsPage } from "./pages/SetlistsPage"
-import { SetlistDetailPage } from "./pages/SetlistDetailPage"
+import { SetlistDetailPage as SetlistDetailView } from "./pages/SetlistDetailPage"
 import { PresentationPage } from "./pages/PresentationPage"
 import { LiturgyBuilderPage } from "./pages/LiturgyBuilderPage"
+
+// Importando o Contexto de Autenticação
+import { AuthProvider } from "@/contexts/AuthContext"
 
 function AppRoutes() {
   const navigate = useNavigate()
@@ -29,33 +33,20 @@ function AppRoutes() {
   const [_isOffline, setIsOffline] = useState(!navigator.onLine)
 
   useEffect(() => {
-    const handleOffline = () => {
-      setIsOffline(true)
-      // Se a internet cair e o usuário estiver na Home, joga ele para as músicas salvas
-      if (location.pathname === "/") {
-        navigate("/salvas")
-      }
-    }
-    
     const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
 
-    window.addEventListener('offline', handleOffline)
     window.addEventListener('online', handleOnline)
-
-    // Verificação inicial: Se abrir o app já sem net na Home, redireciona
-    if (!navigator.onLine && location.pathname === "/") {
-      navigate("/salvas")
-    }
+    window.addEventListener('offline', handleOffline)
 
     return () => {
-      window.removeEventListener('offline', handleOffline)
       window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
     }
-  }, [navigate, location])
+  }, [])
 
   return (
     <Routes>
-      {/* Rotas Públicas */}
       <Route path="/" element={<HomePage />} />
       <Route path="/musica/:id" element={<SongPage />} />
       <Route path="/musicas" element={<MusicasPage />} />
@@ -68,12 +59,13 @@ function AppRoutes() {
       <Route path="/categorias" element={<CategoriesPage />} />
       <Route path="/afinador" element={<TunerPage />} />
       <Route path="/repertorios" element={<SetlistsPage />} />
-      <Route path="/repertorios/:id" element={<SetlistDetailPage />} />
+      <Route path="/repertorios/:id" element={<SetlistDetailView />} />
       <Route path="/apresentacao/:id" element={<PresentationPage />} />
       <Route path="/liturgia" element={<LiturgyBuilderPage />} />
       
       <Route path="/contribuir" element={<ContributePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/registro" element={<RegisterPage />} /> {/* <--- Nova Rota de Registro */}
       
       {/* Rotas Protegidas (Admin) */}
       <Route element={<ProtectedLayout />}>
@@ -88,12 +80,12 @@ function AppRoutes() {
   )
 }
 
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <AuthProvider> {/* <--- O AuthProvider envolve todo o App */}
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
-
-export default App

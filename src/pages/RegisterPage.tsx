@@ -26,7 +26,7 @@ export function RegisterPage() {
 
     try {
       // 1. Cria o usuário no Auth do Supabase
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
