@@ -163,9 +163,7 @@ function ReviewModal({ suggestion, onActionComplete }: { suggestion: Sugestao, o
                     .from('musicas')
                     .insert([{
                         ...finalData,
-                        enviado_por: suggestion.enviado_por,
-                        bpm: 0,
-                        tom_original: ""
+                        enviado_por: suggestion.enviado_por
                     }])
                 if (error) throw error
             }

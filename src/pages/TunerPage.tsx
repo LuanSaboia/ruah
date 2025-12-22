@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react"
 import { Navbar } from "@/components/Navbar"
 import { Button } from "@/components/ui/button"
 import { Mic, MicOff } from "lucide-react"
-import { autoCorrelate, getNote, getNoteString, getCents } from "@/lib/tuner"
+// Trocamos autoCorrelate por detectPitch
+import { detectPitch, getNote, getNoteString, getCents } from "@/lib/tuner"
 import { useToast } from "@/lib/useToast"
 
 export function TunerPage() {
@@ -51,18 +52,21 @@ export function TunerPage() {
   }
 
   const updatePitch = () => {
-    if (!analyserRef.current) return
+    // Verificamos se os refs existem
+    if (!analyserRef.current || !audioContextRef.current) return
 
     const buffer = new Float32Array(analyserRef.current.fftSize)
     analyserRef.current.getFloatTimeDomainData(buffer)
     
-    const frequency = autoCorrelate(buffer, audioContextRef.current!.sampleRate)
+    // Correção: usamos detectPitch e acessamos o sampleRate através do .current
+    const frequency = detectPitch(buffer, audioContextRef.current.sampleRate)
 
-    if (frequency > -1) {
+    if (frequency !== -1) {
       const noteNum = getNote(frequency)
       const noteName = getNoteString(noteNum)
       const detune = getCents(frequency, noteNum)
       
+      // Correção: nomes dos seus estados reais
       setNote(noteName)
       setCents(detune)
     }
