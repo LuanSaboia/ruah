@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button"
 import { SongListItem } from "@/components/SongListItem"
 import { setlistStorage } from "@/lib/setlist-storage"
 import type { Setlist } from "@/types"
-import { ArrowLeft, PlayCircle, Trash2 } from "lucide-react"
+import { ArrowLeft, Loader2, PlayCircle, Share2, Trash2 } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { useToast } from "@/lib/useToast"
 
 export function SetlistDetailPage() {
+    const { addToast } = useToast()
     const { id } = useParams()
     const navigate = useNavigate()
     const [list, setList] = useState<Setlist | undefined>(undefined)
@@ -31,6 +34,36 @@ export function SetlistDetailPage() {
         navigate(`/apresentacao/${list?.id}`)
     }
 
+    const [isSharing, setIsSharing] = useState(false)
+
+    const handleShare = async () => {
+        if (!list) return
+        setIsSharing(true)
+
+        try {
+            // Envia para a tabela de compartilhamentos
+            const { data, error } = await supabase
+                .from('compartilhamentos')
+                .insert([{
+                    titulo: list.nome,
+                    musica_ids: list.musicas.map(m => m.id)
+                }])
+                .select()
+                .single()
+
+            if (error) throw error
+
+            // Gera o link e copia para o teclado
+            const shareUrl = `${window.location.origin}/importar/${data.id}`
+            await navigator.clipboard.writeText(shareUrl)
+            addToast("Link de compartilhamento copiado!", "success")
+        } catch (err) {
+            addToast("Erro ao gerar link de compartilhamento", "error")
+        } finally {
+            setIsSharing(false)
+        }
+    }
+
     if (!list) return null
 
     return (
@@ -50,9 +83,19 @@ export function SetlistDetailPage() {
                         <p className="text-zinc-500 mt-1">{list.musicas.length} músicas selecionadas</p>
                     </div>
                     {list.musicas.length > 0 && (
-                        <Button onClick={startPresentation} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 w-full md:w-auto">
+                        <><Button onClick={startPresentation} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 w-full md:w-auto">
                             <PlayCircle className="w-4 h-4" /> Iniciar Apresentação
                         </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            gap-2
+                            onClick={handleShare}
+                            disabled={isSharing}
+                        >
+                                {isSharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+                                Compartilhar
+                            </Button></>
                     )}
                 </div>
 

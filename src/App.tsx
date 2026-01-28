@@ -20,6 +20,7 @@ import { SetlistsPage } from "./pages/SetlistsPage"
 import { SetlistDetailPage } from "./pages/SetlistDetailPage"
 import { PresentationPage } from "./pages/PresentationPage"
 import { LiturgyBuilderPage } from "./pages/LiturgyBuilderPage"
+import { ImportPage } from "./pages/ImportPage"
 
 function AppRoutes() {
   const navigate = useNavigate()
@@ -59,6 +60,7 @@ function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/musica/:id" element={<SongPage />} />
       <Route path="/musicas" element={<MusicasPage />} />
+      <Route path="/importar/:id" element={<ImportPage />} />
       
       {/* Rota Nova: Músicas Offline */}
       <Route path="/salvas" element={<SavedSongsPage />} />

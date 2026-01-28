@@ -102,7 +102,7 @@ export function Navbar() {
                     <MenuLink to="/" icon={Home} label="Início" />
                     <MenuLink to="/repertorios" icon={ListMusic} label="Meus Repertórios" />
                     <MenuLink to="/liturgia" icon={CalendarDays} label="Gerador de Liturgia" />
-                    <MenuLink to="/afinador" icon={Mic2} label="Afinador Online" />
+                    {/* <MenuLink to="/afinador" icon={Mic2} label="Afinador Online" /> */}
                     
                     <p className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 mt-6">Explorar</p>
                     <MenuLink to="/artistas" icon={Users} label="Artistas" />
