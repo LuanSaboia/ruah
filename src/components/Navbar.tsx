@@ -5,7 +5,6 @@ import {
   Menu, 
   Home, 
   ListMusic, 
-  Mic2, 
   Music2, 
   Users, 
   LayoutList, 
