@@ -87,7 +87,7 @@ export function ArtistsPage() {
             {filteredArtists.map((artist) => (
               <Link 
                 key={artist} 
-                to={`/artista/${encodeURIComponent(artist)}`}
+                to={`/artistas/${encodeURIComponent(artist)}`}
                 className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:border-blue-400 dark:hover:border-blue-600 transition-all group shadow-sm"
               >
                 <div className="flex items-center gap-4">

@@ -43,7 +43,6 @@ function AppRoutes() {
     window.addEventListener('offline', handleOffline)
     window.addEventListener('online', handleOnline)
 
-    // Verificação inicial: Se abrir o app já sem net na Home, redireciona
     if (!navigator.onLine && location.pathname === "/") {
       navigate("/salvas")
     }
