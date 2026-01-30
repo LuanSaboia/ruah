@@ -26,6 +26,12 @@ export const setlistStorage = {
     return newList;
   },
 
+  update: (id: string, data: Partial<Setlist>) => {
+    const lists = setlistStorage.getAll();
+    const updated = lists.map(l => l.id === id ? { ...l, ...data } : l);
+    localStorage.setItem(KEY, JSON.stringify(updated));
+  },
+
   delete: (id: string) => {
     const lists = setlistStorage.getAll().filter(l => l.id !== id);
     localStorage.setItem(KEY, JSON.stringify(lists));
@@ -37,11 +43,9 @@ export const setlistStorage = {
 
     const updated = lists.map(list => {
       if (list.id === setlistId) {
-        
         if (list.musicas.some(m => m.id === song.id)) {
             return list;
         }
-        
         success = true; 
         return { ...list, musicas: [...list.musicas, song] };
       }
@@ -51,7 +55,6 @@ export const setlistStorage = {
     if (success) {
         localStorage.setItem(KEY, JSON.stringify(updated));
     }
-    
     return success;
   },
 
@@ -60,6 +63,17 @@ export const setlistStorage = {
     const updated = lists.map(list => {
       if (list.id === setlistId) {
         return { ...list, musicas: list.musicas.filter(m => m.id !== songId) };
+      }
+      return list;
+    });
+    localStorage.setItem(KEY, JSON.stringify(updated));
+  },
+
+  reorderSongs: (setlistId: string, musicas: Musica[]) => {
+    const lists = setlistStorage.getAll();
+    const updated = lists.map(list => {
+      if (list.id === setlistId) {
+        return { ...list, musicas };
       }
       return list;
     });
